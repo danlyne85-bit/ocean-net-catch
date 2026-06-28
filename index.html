@@ -20,13 +20,68 @@ canvas { display:block; cursor:crosshair; touch-action:none; }
 }
 #dex-btn:hover { transform:scale(1.12); }
 #dex-btn:active { transform:scale(0.95); }
+#pw-screen {
+  position:fixed; inset:0; z-index:999;
+  background:linear-gradient(180deg,#001a33 0%,#003366 60%,#001a33 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+}
+#pw-screen h1 { color:#FFD700; font-size:clamp(28px,6vw,52px); text-shadow:0 0 20px rgba(255,215,0,.6); }
+#pw-screen p  { color:#81D4FA; font-size:clamp(14px,3vw,20px); }
+#pw-screen input {
+  padding:14px 22px; font-size:clamp(16px,4vw,22px);
+  border-radius:30px; border:3px solid #0288D1;
+  background:rgba(0,0,0,.4); color:#fff; text-align:center;
+  outline:none; width:min(280px,80vw);
+  font-family:inherit;
+}
+#pw-screen input::placeholder { color:#4FC3F7; }
+#pw-screen button {
+  padding:14px 36px; font-size:clamp(16px,4vw,22px);
+  border-radius:30px; border:none; cursor:pointer;
+  background:linear-gradient(135deg,#0288D1,#01579B);
+  color:#fff; font-family:inherit;
+  box-shadow:0 4px 18px rgba(2,136,209,.5);
+  transition:transform .15s;
+}
+#pw-screen button:hover { transform:scale(1.07); }
+#pw-screen button:active { transform:scale(0.95); }
+#pw-error { color:#FF5252; font-size:clamp(13px,3vw,18px); min-height:24px; }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<button id="dex-btn" title="Ocean Dex (P)">📖</button>
+<div id="pw-screen">
+  <h1>🌊 Ocean Net Catch</h1>
+  <p>Enter password to play</p>
+  <input id="pw-input" type="password" placeholder="Password" autocomplete="off" />
+  <button id="pw-btn">Dive In!</button>
+  <div id="pw-error"></div>
+</div>
+<canvas id="c" style="display:none"></canvas>
+<button id="dex-btn" title="Ocean Dex (P)" style="display:none">📖</button>
 <script>
 'use strict';
+(function(){
+  const PW='ocean123';
+  function unlock(){
+    document.getElementById('pw-screen').style.display='none';
+    document.getElementById('c').style.display='block';
+    document.getElementById('dex-btn').style.display='flex';
+  }
+  function tryPassword(){
+    const val=document.getElementById('pw-input').value;
+    if(val===PW){ unlock(); }
+    else{
+      const err=document.getElementById('pw-error');
+      err.textContent='Wrong password. Try again!';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
+      setTimeout(()=>{ err.textContent=''; },2000);
+    }
+  }
+  document.getElementById('pw-btn').addEventListener('click',tryPassword);
+  document.getElementById('pw-input').addEventListener('keydown',e=>{ if(e.key==='Enter') tryPassword(); });
+  document.getElementById('pw-input').focus();
+})();
 /* ═══════════════════════════════════════════════════════════════════════════
    OCEAN NET CATCH  —  Enhanced Edition
    ── HOW TO CONFIGURE ─────────────────────────────────────────────────────
