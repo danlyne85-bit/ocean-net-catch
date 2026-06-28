@@ -6,18 +6,20 @@
 <title>🌊 Ocean Net Catch!</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { overflow:hidden; background:#001a33; font-family:'Comic Sans MS','Chalkboard SE',cursive; user-select:none; }
-canvas { display:block; cursor:crosshair; }
+body { overflow:hidden; background:#001a33; font-family:'Comic Sans MS','Chalkboard SE',cursive; user-select:none; touch-action:none; }
+canvas { display:block; cursor:crosshair; touch-action:none; }
 #dex-btn {
   position:absolute; top:14px; left:14px;
-  width:52px; height:52px; border-radius:50%;
+  width:60px; height:60px; border-radius:50%;
   background:linear-gradient(135deg,#FF6B6B,#FF8E53);
-  border:3px solid #FFD700; cursor:pointer; font-size:26px;
+  border:3px solid #FFD700; cursor:pointer; font-size:28px;
   display:flex; align-items:center; justify-content:center;
   box-shadow:0 4px 18px rgba(255,107,107,.5);
   transition:transform .15s; z-index:10;
+  -webkit-tap-highlight-color:transparent;
 }
 #dex-btn:hover { transform:scale(1.12); }
+#dex-btn:active { transform:scale(0.95); }
 </style>
 </head>
 <body>
@@ -907,6 +909,7 @@ const cannon={x:W/2, y:H-58, angle:-Math.PI/2, recoil:0};
 let dexScroll=0, dexFilter='all', dexMaxScroll=0;
 // hit-test areas populated each frame
 let dexFilterBtns=[], dexCards=[], dexCloseArea=null;
+let _dexTouchY=0;
 
 let gameTime=0;
 
@@ -1809,15 +1812,43 @@ canvas.addEventListener('click',e=>{
 canvas.addEventListener('touchstart',e=>{
   e.preventDefault();
   const t=e.touches[0];
-  if(screen==='playing'){aimAt(t.clientX,t.clientY);fireNet();}
-  if(screen==='intro'&&introTimer>60) screen='playing';
+  const cx=t.clientX, cy=t.clientY;
+
+  if(screen==='pokédex'){
+    if(dexCloseArea&&cx>=dexCloseArea.x&&cy>=dexCloseArea.y&&cx<=dexCloseArea.x+dexCloseArea.w&&cy<=dexCloseArea.y+dexCloseArea.h){
+      screen='playing'; return;
+    }
+    for(const btn of dexFilterBtns){
+      if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
+        dexFilter=btn.filter; dexScroll=0; return;
+      }
+    }
+    _dexTouchY=cy;
+    return;
+  }
+
+  if(screen==='stageClear'){
+    const btn=ctx._stageClearBtn;
+    if(btn&&stageClearTimer>60&&cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
+      stageClearTimer=0;
+      if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
+      else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
+    }
+    return;
+  }
+
+  if(screen==='intro'&&introTimer>60){ screen='playing'; return; }
+  if(screen==='playing'){ aimAt(cx,cy); fireNet(); }
 },{passive:false});
 
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
-  if(screen==='playing') aimAt(e.touches[0].clientX,e.touches[0].clientY);
+  const t=e.touches[0];
+  if(screen==='playing') aimAt(t.clientX,t.clientY);
   if(screen==='pokédex'){
-    // scroll dex
+    const delta=_dexTouchY-t.clientY;
+    dexScroll=Math.max(0,Math.min(dexMaxScroll,dexScroll+delta));
+    _dexTouchY=t.clientY;
   }
 },{passive:false});
 
