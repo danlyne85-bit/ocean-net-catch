@@ -728,6 +728,333 @@ function drawNarwhal(c) {
   c.beginPath();c.ellipse(4,0,24,17,0,0,Math.PI*2);c.stroke();
 }
 
+function drawMantisShrimp(c) {
+  // segmented tail fan
+  c.fillStyle='#00BCD4';
+  [14,20,26].forEach(x=>{c.beginPath();c.ellipse(x,0,7,5,0,0,Math.PI*2);c.fill();});
+  c.fillStyle='#0097A7';
+  [[34,-10],[34,-4],[34,4],[34,10]].forEach(([x,y])=>{
+    c.beginPath();c.ellipse(x,y,7,3,y<0?-0.4:0.4,0,Math.PI*2);c.fill();
+  });
+  // iridescent body
+  const sg=c.createLinearGradient(-28,-12,0,12);
+  sg.addColorStop(0,'#E040FB');sg.addColorStop(0.3,'#00BCD4');sg.addColorStop(0.7,'#64DD17');sg.addColorStop(1,'#FFD740');
+  c.fillStyle=sg;
+  c.beginPath();c.ellipse(-4,0,24,10,0,0,Math.PI*2);c.fill();
+  // legs
+  c.strokeStyle='#00838F';c.lineWidth=1.5;
+  [-10,-4,2,8].forEach(x=>{
+    c.beginPath();c.moveTo(x,8);c.lineTo(x+2,18);c.stroke();
+    c.beginPath();c.moveTo(x,8);c.lineTo(x-2,18);c.stroke();
+  });
+  // raptorial clubs
+  c.fillStyle='#E040FB';c.beginPath();c.ellipse(-22,5,12,6,0.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#880E4F';c.beginPath();c.ellipse(-30,7,8,5,0.5,0,Math.PI*2);c.fill();
+  // eyes on stalks
+  c.strokeStyle='#004D40';c.lineWidth=2;
+  c.beginPath();c.moveTo(-24,-8);c.lineTo(-30,-14);c.stroke();
+  c.beginPath();c.moveTo(-24,-4);c.lineTo(-29,-10);c.stroke();
+  c.fillStyle='#69F0AE';
+  c.beginPath();c.arc(-30,-14,5,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(-29,-10,4,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';
+  c.beginPath();c.arc(-30,-14,2,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(-29,-10,1.5,0,Math.PI*2);c.fill();
+}
+
+function drawBarracuda(c) {
+  // forked tail
+  c.fillStyle='#546E7A';
+  c.beginPath();c.moveTo(32,0);c.lineTo(48,-12);c.lineTo(42,-2);c.lineTo(44,0);c.lineTo(42,2);c.lineTo(48,12);c.closePath();c.fill();
+  // elongated body
+  const bg=c.createLinearGradient(0,-8,0,8);
+  bg.addColorStop(0,'#78909C');bg.addColorStop(0.5,'#B0BEC5');bg.addColorStop(1,'#546E7A');
+  c.fillStyle=bg;
+  c.beginPath();c.moveTo(-28,0);c.bezierCurveTo(-20,-8,20,-8,32,0);c.bezierCurveTo(20,7,-20,7,-28,0);c.closePath();c.fill();
+  // lateral stripe
+  c.strokeStyle='#37474F';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(-26,0);c.bezierCurveTo(-10,-1,16,-1,30,0);c.stroke();
+  // dorsal fins
+  c.fillStyle='#546E7A';
+  c.beginPath();c.moveTo(-4,-8);c.lineTo(-2,-22);c.lineTo(4,-22);c.lineTo(6,-8);c.closePath();c.fill();
+  c.beginPath();c.moveTo(14,-8);c.lineTo(16,-18);c.lineTo(20,-18);c.lineTo(22,-8);c.closePath();c.fill();
+  // snout / mouth with teeth
+  c.fillStyle='#455A64';
+  c.beginPath();c.moveTo(-28,0);c.lineTo(-44,-3);c.lineTo(-38,5);c.closePath();c.fill();
+  c.fillStyle='#B71C1C';
+  c.beginPath();c.moveTo(-42,-1);c.lineTo(-38,0);c.lineTo(-40,4);c.closePath();c.fill();
+  c.fillStyle='#FAFAFA';
+  [-40,-37,-34].forEach(x=>{c.beginPath();c.moveTo(x,-1);c.lineTo(x+1,-4);c.lineTo(x+2,-1);c.fill();});
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-22,-2,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-22,-2,3,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-21,-3,1.2,0,Math.PI*2);c.fill();
+  // outline
+  c.strokeStyle='#37474F';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(-28,0);c.bezierCurveTo(-20,-8,20,-8,32,0);c.bezierCurveTo(20,7,-20,7,-28,0);c.closePath();c.stroke();
+}
+
+function drawMorayEel(c) {
+  c.lineCap='round';c.lineJoin='round';
+  // dark outline
+  c.strokeStyle='#1B5E20';c.lineWidth=22;
+  c.beginPath();c.moveTo(-36,4);c.bezierCurveTo(-10,-12,12,12,36,-4);c.stroke();
+  // green body
+  const eg=c.createLinearGradient(-36,0,36,0);
+  eg.addColorStop(0,'#388E3C');eg.addColorStop(0.5,'#8BC34A');eg.addColorStop(1,'#33691E');
+  c.strokeStyle=eg;c.lineWidth=18;
+  c.beginPath();c.moveTo(-36,4);c.bezierCurveTo(-10,-12,12,12,36,-4);c.stroke();
+  // pattern spots
+  c.fillStyle='rgba(245,243,150,0.35)';
+  [[-24,0,5,4],[-12,-5,4,3],[2,6,5,4],[16,1,4,3],[28,-4,4,3]].forEach(([x,y,rx,ry])=>{
+    c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();
+  });
+  // dorsal ridge
+  c.strokeStyle='#2E7D32';c.lineWidth=4;
+  c.beginPath();c.moveTo(-30,-5);c.bezierCurveTo(-10,-18,14,8,36,-8);c.stroke();
+  // head
+  c.fillStyle='#2E7D32';c.beginPath();c.ellipse(-36,4,12,8,-0.2,0,Math.PI*2);c.fill();
+  c.fillStyle='#B71C1C';c.beginPath();c.ellipse(-40,5,7,5,-0.2,0,Math.PI*2);c.fill();
+  c.fillStyle='#FAFAFA';
+  [[-44,2],[-41,1],[-38,2]].forEach(([x,y])=>{c.beginPath();c.moveTo(x,y);c.lineTo(x+1,y-5);c.lineTo(x+2,y);c.fill();});
+  // eye
+  c.fillStyle='#FFE57F';c.beginPath();c.arc(-30,0,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-30,0,2.5,0,Math.PI*2);c.fill();
+}
+
+function drawHammerheadShark(c) {
+  // tail
+  c.fillStyle='#546E7A';
+  c.beginPath();c.moveTo(32,0);c.lineTo(50,-16);c.lineTo(42,0);c.lineTo(50,16);c.closePath();c.fill();
+  // dorsal fin
+  c.fillStyle='#455A64';c.beginPath();c.moveTo(2,-12);c.lineTo(8,-30);c.lineTo(18,-12);c.closePath();c.fill();
+  // body
+  const hg=c.createLinearGradient(0,-12,0,12);
+  hg.addColorStop(0,'#607D8B');hg.addColorStop(0.5,'#90A4AE');hg.addColorStop(1,'#ECEFF1');
+  c.fillStyle=hg;
+  c.beginPath();c.moveTo(-26,0);c.bezierCurveTo(-16,-12,22,-11,32,0);c.bezierCurveTo(22,8,-16,9,-26,0);c.closePath();c.fill();
+  // pectoral fin
+  c.fillStyle='#546E7A';c.beginPath();c.moveTo(-4,10);c.lineTo(-14,26);c.lineTo(10,14);c.closePath();c.fill();
+  // T-shaped hammerhead
+  c.fillStyle='#78909C';c.beginPath();c.ellipse(-30,0,10,22,0,0,Math.PI*2);c.fill();
+  c.strokeStyle='#455A64';c.lineWidth=1.5;c.beginPath();c.ellipse(-30,0,10,22,0,0,Math.PI*2);c.stroke();
+  // eyes at hammer ends
+  [[-28,-16],[-28,16]].forEach(([x,y])=>{
+    c.fillStyle='#FFF';c.beginPath();c.arc(x,y,5,0,Math.PI*2);c.fill();
+    c.fillStyle='#1A1A1A';c.beginPath();c.arc(x,y,2.5,0,Math.PI*2);c.fill();
+  });
+  // white belly
+  c.fillStyle='rgba(236,239,241,.55)';c.beginPath();c.ellipse(2,8,18,5,0,0,Math.PI*2);c.fill();
+  // body outline
+  c.strokeStyle='#455A64';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(-26,0);c.bezierCurveTo(-16,-12,22,-11,32,0);c.bezierCurveTo(22,8,-16,9,-26,0);c.closePath();c.stroke();
+}
+
+function drawAnglerfish(c) {
+  // lure
+  c.strokeStyle='#37474F';c.lineWidth=2;
+  c.beginPath();c.moveTo(-20,-14);c.bezierCurveTo(-28,-28,-36,-32,-32,-22);c.stroke();
+  c.save();c.shadowColor='rgba(0,255,150,0.9)';c.shadowBlur=12;
+  c.fillStyle='#69F0AE';c.beginPath();c.arc(-32,-22,6,0,Math.PI*2);c.fill();
+  c.restore();
+  c.fillStyle='rgba(100,255,180,.3)';c.beginPath();c.arc(-32,-22,10,0,Math.PI*2);c.fill();
+  // tail
+  c.fillStyle='#1A237E';
+  c.beginPath();c.moveTo(22,0);c.lineTo(36,-10);c.lineTo(30,0);c.lineTo(36,10);c.closePath();c.fill();
+  // round dark body
+  const ag=c.createRadialGradient(-6,0,2,-2,-4,22);
+  ag.addColorStop(0,'#283593');ag.addColorStop(1,'#0D0D35');
+  c.fillStyle=ag;c.beginPath();c.ellipse(-4,2,22,18,0,0,Math.PI*2);c.fill();
+  // huge mouth
+  c.fillStyle='#B71C1C';
+  c.beginPath();c.moveTo(-24,-2);c.bezierCurveTo(-30,6,-20,14,-8,12);c.bezierCurveTo(0,14,4,10,4,6);c.lineTo(-24,-2);c.closePath();c.fill();
+  // fangs
+  c.fillStyle='#FAFAFA';
+  [[-22,0],[-16,2],[-10,4],[-4,6]].forEach(([x,y])=>{c.beginPath();c.moveTo(x,y);c.lineTo(x+2,y+8);c.lineTo(x+4,y);c.fill();});
+  [[-20,6],[-14,9],[-8,10]].forEach(([x,y])=>{c.beginPath();c.moveTo(x,y);c.lineTo(x+1,y-6);c.lineTo(x+3,y);c.fill();});
+  // bioluminescent photophores
+  c.save();c.shadowColor='rgba(0,200,255,0.7)';c.shadowBlur=8;
+  c.fillStyle='#00E5FF';
+  [[2,-10],[10,-6],[14,4],[8,12]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,2.5,0,Math.PI*2);c.fill();});
+  c.restore();
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-14,-8,7,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFD740';c.beginPath();c.arc(-14,-8,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-14,-8,3,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-13,-9,1.2,0,Math.PI*2);c.fill();
+  c.strokeStyle='#1A237E';c.lineWidth=1.5;c.beginPath();c.ellipse(-4,2,22,18,0,0,Math.PI*2);c.stroke();
+}
+
+function drawViperfish(c) {
+  const vg=c.createLinearGradient(0,-6,0,6);
+  vg.addColorStop(0,'#1A1A2E');vg.addColorStop(0.5,'#16213E');vg.addColorStop(1,'#0F3460');
+  c.fillStyle=vg;
+  c.beginPath();c.moveTo(-30,0);c.bezierCurveTo(-20,-7,20,-6,36,0);c.bezierCurveTo(20,5,-20,6,-30,0);c.closePath();c.fill();
+  // tail
+  c.fillStyle='#0F3460';
+  c.beginPath();c.moveTo(32,0);c.lineTo(46,-12);c.lineTo(40,0);c.lineTo(46,12);c.closePath();c.fill();
+  // photophores
+  c.save();c.shadowColor='rgba(100,200,255,0.8)';c.shadowBlur=6;
+  c.fillStyle='#82B1FF';
+  [-18,-10,-2,8,18,26].forEach(x=>{c.beginPath();c.arc(x,3,2,0,Math.PI*2);c.fill();});
+  c.restore();
+  // dorsal spine with glowing tip
+  c.strokeStyle='#0F3460';c.lineWidth=2;
+  c.beginPath();c.moveTo(-20,-6);c.lineTo(-16,-18);c.stroke();
+  c.save();c.shadowColor='rgba(100,200,255,0.8)';c.shadowBlur=8;
+  c.fillStyle='#82B1FF';c.beginPath();c.arc(-16,-18,3,0,Math.PI*2);c.fill();
+  c.restore();
+  // huge needle fangs (lower jaw up)
+  c.fillStyle='#E0E0E0';
+  c.beginPath();c.moveTo(-28,2);c.lineTo(-22,-14);c.lineTo(-18,2);c.fill();
+  c.beginPath();c.moveTo(-22,2);c.lineTo(-18,-10);c.lineTo(-14,2);c.fill();
+  c.fillStyle='#BDBDBD';
+  c.beginPath();c.moveTo(-28,-2);c.lineTo(-24,10);c.lineTo(-20,-2);c.fill();
+  // mouth gap
+  c.fillStyle='#B71C1C';
+  c.beginPath();c.moveTo(-30,0);c.lineTo(-22,-2);c.lineTo(-22,3);c.lineTo(-30,0);c.closePath();c.fill();
+  // glowing eye
+  c.save();c.shadowColor='rgba(130,177,255,0.9)';c.shadowBlur=8;
+  c.fillStyle='#82B1FF';c.beginPath();c.arc(-20,-2,6,0,Math.PI*2);c.fill();
+  c.restore();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-20,-2,3,0,Math.PI*2);c.fill();
+  c.strokeStyle='#0D2137';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(-30,0);c.bezierCurveTo(-20,-7,20,-6,36,0);c.bezierCurveTo(20,5,-20,6,-30,0);c.closePath();c.stroke();
+}
+
+function drawBarreleyeFish(c) {
+  // small silvery body
+  const bg=c.createLinearGradient(0,-8,0,8);
+  bg.addColorStop(0,'#B0BEC5');bg.addColorStop(0.5,'#ECEFF1');bg.addColorStop(1,'#607D8B');
+  c.fillStyle=bg;c.beginPath();c.ellipse(4,2,18,9,0,0,Math.PI*2);c.fill();
+  // tail
+  c.fillStyle='#78909C';
+  c.beginPath();c.moveTo(20,2);c.lineTo(32,-8);c.lineTo(28,2);c.lineTo(32,12);c.closePath();c.fill();
+  // transparent dome head
+  c.fillStyle='rgba(150,220,255,0.3)';
+  c.strokeStyle='rgba(100,200,255,0.6)';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(-16,-2,16,14,0,0,Math.PI*2);c.fill();c.stroke();
+  // barrel eye tubes
+  c.fillStyle='rgba(20,20,40,0.6)';
+  c.beginPath();c.ellipse(-20,-4,5,10,0,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(-12,-4,5,10,0,0,Math.PI*2);c.fill();
+  // glowing green eyes at top
+  c.save();c.shadowColor='rgba(50,255,100,0.9)';c.shadowBlur=8;
+  c.fillStyle='#69F0AE';
+  c.beginPath();c.arc(-20,-12,5,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(-12,-12,5,0,Math.PI*2);c.fill();
+  c.restore();
+  c.fillStyle='#1A1A1A';
+  c.beginPath();c.arc(-20,-12,2.5,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(-12,-12,2.5,0,Math.PI*2);c.fill();
+  // tiny mouth
+  c.fillStyle='#455A64';c.beginPath();c.arc(-28,2,3,0,Math.PI*2);c.fill();
+  // fins
+  c.fillStyle='rgba(176,190,197,.6)';
+  c.beginPath();c.moveTo(-4,-8);c.lineTo(0,-18);c.lineTo(8,-8);c.closePath();c.fill();
+  c.beginPath();c.moveTo(-4,10);c.lineTo(0,20);c.lineTo(8,10);c.closePath();c.fill();
+  c.strokeStyle='#546E7A';c.lineWidth=1;c.beginPath();c.ellipse(4,2,18,9,0,0,Math.PI*2);c.stroke();
+}
+
+function drawDumboOctopus(c) {
+  // short tentacles
+  c.strokeStyle='#7B1FA2';c.lineWidth=5;c.lineCap='round';
+  [[-4,12],[-10,14],[-16,12],[-20,8],[2,14],[8,14],[14,12],[18,8]].forEach(([x,y])=>{
+    c.beginPath();c.moveTo(x-6,8);c.quadraticCurveTo(x,14,x+y*0.1,y+8);c.stroke();
+  });
+  // mantle
+  const og=c.createRadialGradient(-4,-6,2,0,0,22);
+  og.addColorStop(0,'#CE93D8');og.addColorStop(1,'#6A1B9A');
+  c.fillStyle=og;c.beginPath();c.ellipse(-2,-2,18,14,0,0,Math.PI*2);c.fill();
+  // Dumbo ear fins
+  c.fillStyle='rgba(206,147,216,.8)';
+  c.beginPath();c.ellipse(-16,-6,12,10,-0.6,0,Math.PI*2);c.fill();
+  c.strokeStyle='#7B1FA2';c.lineWidth=1.5;c.beginPath();c.ellipse(-16,-6,12,10,-0.6,0,Math.PI*2);c.stroke();
+  c.fillStyle='rgba(206,147,216,.8)';
+  c.beginPath();c.ellipse(10,-6,12,10,0.6,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(10,-6,12,10,0.6,0,Math.PI*2);c.stroke();
+  // eyes
+  [[-8,-4],[4,-4]].forEach(([x,y])=>{
+    c.fillStyle='#FFF';c.beginPath();c.arc(x,y,6,0,Math.PI*2);c.fill();
+    c.fillStyle='#1A1A1A';c.beginPath();c.arc(x,y,3.5,0,Math.PI*2);c.fill();
+    c.fillStyle='#FFF';c.beginPath();c.arc(x+1,y-1,1.5,0,Math.PI*2);c.fill();
+  });
+  c.fillStyle='#4A148C';c.beginPath();c.arc(-2,4,4,0,Math.PI);c.fill();
+  c.strokeStyle='#4A148C';c.lineWidth=1.5;c.beginPath();c.ellipse(-2,-2,18,14,0,0,Math.PI*2);c.stroke();
+}
+
+function drawGulperEel(c) {
+  // whip tail
+  c.strokeStyle='#1A237E';c.lineWidth=3;c.lineCap='round';
+  c.beginPath();c.moveTo(24,0);c.bezierCurveTo(34,-4,44,4,52,0);c.stroke();
+  c.lineWidth=2;c.beginPath();c.moveTo(46,1);c.bezierCurveTo(54,-3,60,2,64,0);c.stroke();
+  // glowing tail tip
+  c.save();c.shadowColor='rgba(150,100,255,0.9)';c.shadowBlur=8;
+  c.fillStyle='#CE93D8';c.beginPath();c.arc(64,0,4,0,Math.PI*2);c.fill();
+  c.restore();
+  // small body
+  c.fillStyle='#283593';c.beginPath();c.ellipse(14,0,12,7,0,0,Math.PI*2);c.fill();
+  // huge upper jaw
+  c.fillStyle='#0D1B6E';
+  c.beginPath();c.moveTo(-24,0);c.bezierCurveTo(-18,-22,8,-22,20,-8);c.bezierCurveTo(8,4,-18,2,-24,0);c.closePath();c.fill();
+  // lower jaw
+  c.fillStyle='#1A237E';
+  c.beginPath();c.moveTo(-24,0);c.bezierCurveTo(-18,18,8,18,20,8);c.bezierCurveTo(8,14,-18,6,-24,0);c.closePath();c.fill();
+  // inside mouth
+  c.fillStyle='#880E4F';c.beginPath();c.ellipse(-4,0,16,10,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#E0E0E0';
+  [[-14,-4],[-6,-6],[2,-7]].forEach(([x,y])=>{c.beginPath();c.moveTo(x,y);c.lineTo(x+1,y+5);c.lineTo(x+2,y);c.fill();});
+  // tiny eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-20,-4,3.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-20,-4,2,0,Math.PI*2);c.fill();
+}
+
+function drawGiantSquid(c) {
+  // two long tentacles
+  c.strokeStyle='#880E4F';c.lineWidth=4;c.lineCap='round';
+  c.beginPath();c.moveTo(20,-4);c.bezierCurveTo(36,-10,48,-6,60,0);c.stroke();
+  c.beginPath();c.moveTo(20,4);c.bezierCurveTo(36,10,48,6,60,0);c.stroke();
+  // tentacle suckers
+  c.fillStyle='#CE93D8';
+  [48,52,56].forEach(x=>{
+    c.beginPath();c.arc(x,-2,2.5,0,Math.PI*2);c.fill();
+    c.beginPath();c.arc(x,2,2.5,0,Math.PI*2);c.fill();
+  });
+  // 8 shorter arms
+  c.strokeStyle='#AD1457';c.lineWidth=3;
+  [[-10,-16],[-4,-18],[6,-16],[14,-14],[-10,16],[-4,18],[6,16],[14,14]].forEach(([x,y])=>{
+    c.beginPath();c.moveTo(14,0);c.quadraticCurveTo(x+4,y*0.5,x,y);c.stroke();
+  });
+  // mantle
+  const sg=c.createLinearGradient(-20,-14,0,14);
+  sg.addColorStop(0,'#E91E63');sg.addColorStop(0.5,'#AD1457');sg.addColorStop(1,'#880E4F');
+  c.fillStyle=sg;
+  c.beginPath();c.moveTo(-26,0);c.bezierCurveTo(-20,-18,14,-14,20,0);c.bezierCurveTo(14,14,-20,18,-26,0);c.closePath();c.fill();
+  // fin lobes
+  c.fillStyle='#AD1457';
+  c.beginPath();c.moveTo(20,0);c.lineTo(30,-10);c.lineTo(24,0);c.lineTo(30,10);c.closePath();c.fill();
+  // shimmer
+  c.fillStyle='rgba(255,100,200,.2)';c.beginPath();c.ellipse(-6,-4,14,8,0,0,Math.PI*2);c.fill();
+  // eyes
+  c.fillStyle='#FFF';c.beginPath();c.arc(-18,-4,8,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-18,-4,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-16,-6,2,0,Math.PI*2);c.fill();
+  // beak
+  c.fillStyle='#1A1A1A';c.beginPath();c.moveTo(-26,-2);c.lineTo(-32,0);c.lineTo(-26,2);c.closePath();c.fill();
+  c.strokeStyle='#880E4F';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(-26,0);c.bezierCurveTo(-20,-18,14,-14,20,0);c.bezierCurveTo(14,14,-20,18,-26,0);c.closePath();c.stroke();
+}
+
+// Color variants using hue-rotate filter
+function drawBlueClownfish(c){c.save();c.filter='hue-rotate(230deg) saturate(1.2)';drawClownfish(c);c.restore();}
+function drawGoldenTang(c){c.save();c.filter='hue-rotate(165deg) saturate(1.3)';drawBlueTang(c);c.restore();}
+function drawPurpleAngelfish(c){c.save();c.filter='hue-rotate(60deg) saturate(1.1)';drawAngelfish(c);c.restore();}
+function drawPurpleStarfish(c){c.save();c.filter='hue-rotate(190deg) saturate(1.2)';drawStarfish(c);c.restore();}
+function drawGoldenSeahorse(c){c.save();c.filter='hue-rotate(200deg) saturate(1.4)';drawSeahorse(c);c.restore();}
+function drawPinkJellyfish(c){c.save();c.filter='hue-rotate(120deg) saturate(1.3)';drawJellyfish(c);c.restore();}
+function drawGoldLobster(c){c.save();c.filter='hue-rotate(50deg) saturate(1.5)';drawLobster(c);c.restore();}
+function drawBlueCrab(c){c.save();c.filter='hue-rotate(210deg) saturate(1.2)';drawCrab(c);c.restore();}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    CREATURE REGISTRY
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -749,6 +1076,26 @@ const CREATURES = [
   { id:'dolphin',   name:'Dolphin',   rarity:'uncommon',  pts:22,  baseSpeed:3.4, scale:0.9,  noFlip:false, draw:drawDolphin,   desc:'Playful and lightning fast!',      stageUnlock:2 },
   { id:'mantaRay',  name:'Manta Ray', rarity:'rare',      pts:40,  baseSpeed:2.2, scale:0.85, noFlip:false, draw:drawMantaRay,  desc:'A graceful giant of the deep!',    stageUnlock:3 },
   { id:'narwhal',   name:'Narwhal',   rarity:'epic',      pts:55,  baseSpeed:1.8, scale:0.95, noFlip:false, draw:drawNarwhal,   desc:'The unicorn of the ocean!',        stageUnlock:4 },
+  // New deep-sea creatures
+  { id:'mantisShrimp',    name:'Mantis Shrimp',    rarity:'uncommon',  pts:28,  baseSpeed:2.4, scale:0.8,  noFlip:false, draw:drawMantisShrimp,    desc:'Sees 16 colors — punches like a bullet!', stageUnlock:1 },
+  { id:'barracuda',       name:'Barracuda',         rarity:'rare',      pts:38,  baseSpeed:4.8, scale:1.0,  noFlip:false, draw:drawBarracuda,        desc:'A razor-toothed speed demon!',            stageUnlock:2 },
+  { id:'morayEel',        name:'Moray Eel',         rarity:'uncommon',  pts:24,  baseSpeed:2.0, scale:1.0,  noFlip:false, draw:drawMorayEel,         desc:'A sinuous spotted lurker!',               stageUnlock:2 },
+  { id:'hammerheadShark', name:'Hammerhead Shark',  rarity:'rare',      pts:45,  baseSpeed:4.0, scale:1.1,  noFlip:false, draw:drawHammerheadShark,  desc:'Eyes on each end of its hammer head!',    stageUnlock:3 },
+  { id:'anglerfish',      name:'Anglerfish',        rarity:'epic',      pts:60,  baseSpeed:1.8, scale:0.9,  noFlip:false, draw:drawAnglerfish,       desc:'Lures prey with its glowing lantern!',    stageUnlock:3 },
+  { id:'viperfish',       name:'Viperfish',         rarity:'epic',      pts:65,  baseSpeed:3.2, scale:0.9,  noFlip:false, draw:drawViperfish,        desc:'Fang-filled terror of the midnight zone!',stageUnlock:4 },
+  { id:'barreleyeFish',   name:'Barreleye Fish',    rarity:'rare',      pts:42,  baseSpeed:1.4, scale:0.8,  noFlip:true,  draw:drawBarreleyeFish,    desc:'Transparent dome with barrel-shaped eyes!',stageUnlock:3 },
+  { id:'dumboOctopus',    name:'Dumbo Octopus',     rarity:'epic',      pts:70,  baseSpeed:1.2, scale:0.85, noFlip:false, draw:drawDumboOctopus,     desc:'Flaps its ear-like fins like Dumbo!',     stageUnlock:4 },
+  { id:'gulperEel',       name:'Gulper Eel',        rarity:'epic',      pts:75,  baseSpeed:2.0, scale:0.9,  noFlip:false, draw:drawGulperEel,        desc:'Its jaw expands to swallow huge prey!',   stageUnlock:4 },
+  { id:'giantSquid',      name:'Giant Squid',       rarity:'legendary', pts:180, baseSpeed:2.6, scale:1.2,  noFlip:false, draw:drawGiantSquid,       desc:'A kraken-class leviathan of the deep!',   stageUnlock:5 },
+  // Color variants
+  { id:'blueClownfish',   name:'Blue Clownfish',    rarity:'common',    pts:10,  baseSpeed:2.8, scale:1.0,  noFlip:false, draw:drawBlueClownfish,    desc:'A rare blue cousin of the clownfish!',    stageUnlock:1 },
+  { id:'goldenTang',      name:'Golden Tang',       rarity:'common',    pts:12,  baseSpeed:3.2, scale:1.0,  noFlip:false, draw:drawGoldenTang,       desc:'A shimmering golden variation!',          stageUnlock:1 },
+  { id:'purpleAngelfish', name:'Purple Angelfish',  rarity:'uncommon',  pts:22,  baseSpeed:2.3, scale:0.9,  noFlip:false, draw:drawPurpleAngelfish,  desc:'A royal purple elegance!',                stageUnlock:2 },
+  { id:'purpleStarfish',  name:'Purple Starfish',   rarity:'uncommon',  pts:28,  baseSpeed:0.9, scale:0.9,  noFlip:true,  draw:drawPurpleStarfish,   desc:'A violet star of the reef!',              stageUnlock:2 },
+  { id:'goldenSeahorse',  name:'Golden Seahorse',   rarity:'rare',      pts:38,  baseSpeed:1.0, scale:0.75, noFlip:false, draw:drawGoldenSeahorse,   desc:'As precious as golden treasure!',         stageUnlock:3 },
+  { id:'pinkJellyfish',   name:'Pink Jellyfish',    rarity:'epic',      pts:52,  baseSpeed:0.8, scale:0.75, noFlip:true,  draw:drawPinkJellyfish,    desc:'A rosy glow in the darkest depths!',      stageUnlock:4 },
+  { id:'goldLobster',     name:'Gold Lobster',      rarity:'epic',      pts:48,  baseSpeed:1.8, scale:0.85, noFlip:false, draw:drawGoldLobster,      desc:'Strikingly rare golden coloration!',      stageUnlock:4 },
+  { id:'blueCrab',        name:'Blue Crab',         rarity:'uncommon',  pts:22,  baseSpeed:1.6, scale:0.85, noFlip:false, draw:drawBlueCrab,         desc:'A blue-tinted crab of the deep reef!',   stageUnlock:2 },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -757,82 +1104,82 @@ const CREATURES = [
    ═══════════════════════════════════════════════════════════════════════════ */
 const STAGES = [
   {
-    id:1, name:'Sunny Shallows',
-    bg:{ top:'#29B6F6', mid:'#0288D1', bot:'#01579B' },
-    pool:['clownfish','pufferfish','blueTang'],
-    speedMult:0.70, spawnInterval:90,
+    id:1, name:'Sunlight Zone',
+    bg:{ top:'#81D4FA', mid:'#0288D1', bot:'#01579B' },
+    pool:['clownfish','pufferfish','blueTang','blueClownfish','goldenTang','mantisShrimp'],
+    speedMult:0.75, spawnInterval:85,
     challenge:{
-      desc:'Catch 5 sea creatures to advance!',
-      label:'Catch 5',
-      check:s => s.stageCatches >= 5,
-      progress:s => ({ cur:s.stageCatches, max:5 }),
+      desc:'Catch 10 creatures to dive deeper!',
+      label:'Catch 10',
+      check:s => s.stageCatches >= 10,
+      progress:s => ({ cur:s.stageCatches, max:10 }),
     },
-    intro:'Welcome to the Sunny Shallows! 🌞\nCatch 5 creatures to dive deeper!',
+    intro:'Welcome to the Sunlight Zone! (0-200m)\nBright waters teem with colorful life!\nCatch 10 creatures to dive deeper!',
   },
   {
-    id:2, name:'Coral Reef',
-    bg:{ top:'#00ACC1', mid:'#00838F', bot:'#006064' },
-    pool:['clownfish','pufferfish','blueTang','angelfish','starfish','crab','dolphin'],
-    speedMult:0.88, spawnInterval:80,
+    id:2, name:'Twilight Zone',
+    bg:{ top:'#1565C0', mid:'#0D47A1', bot:'#1A237E' },
+    pool:['clownfish','angelfish','starfish','crab','dolphin','mantisShrimp','purpleAngelfish','purpleStarfish','morayEel','blueCrab','barracuda'],
+    speedMult:0.95, spawnInterval:76,
     challenge:{
-      desc:'Catch 12 creatures including 3 different species!',
-      label:'12 & 3 species',
-      check:s => s.stageCatches >= 12 && s.stageSpecies.size >= 3,
-      progress:s => ({ cur:Math.min(s.stageCatches,12), max:12,
-                       sub:`Species: ${s.stageSpecies.size}/3` }),
-    },
-    intro:'You reached the Coral Reef! 🪸\nCatch 12 creatures — variety counts!',
-  },
-  {
-    id:3, name:'Open Ocean',
-    bg:{ top:'#1565C0', mid:'#0D47A1', bot:'#01237B' },
-    pool:['blueTang','angelfish','crab','shark','seahorse','seaTurtle','pufferfish','dolphin','mantaRay'],
-    speedMult:1.05, spawnInterval:72,
-    challenge:{
-      desc:'Catch 18 creatures and snag a Shark!',
-      label:'18 & 1 Shark',
-      check:s => s.stageCatches >= 18 && s.stageSpecies.has('shark'),
+      desc:'Catch 18 creatures including 4 different species!',
+      label:'18 & 4 species',
+      check:s => s.stageCatches >= 18 && s.stageSpecies.size >= 4,
       progress:s => ({ cur:Math.min(s.stageCatches,18), max:18,
-                       sub: s.stageSpecies.has('shark') ? '✅ Shark caught!' : '🦈 Need a Shark' }),
+                       sub:`Species: ${s.stageSpecies.size}/4` }),
     },
-    intro:'The Open Ocean awaits! 🌊\nWatch out for sharks — catch one!',
+    intro:'The Twilight Zone! (200-1000m)\nLight fades and new creatures emerge!\nCatch 18 creatures — variety matters!',
   },
   {
-    id:4, name:'Twilight Zone',
-    bg:{ top:'#1A237E', mid:'#0D1357', bot:'#050A30' },
-    pool:['angelfish','shark','seaTurtle','jellyfish','octopus','lobster','seahorse','mantaRay','narwhal'],
-    speedMult:1.22, spawnInterval:62,
+    id:3, name:'Midnight Zone',
+    bg:{ top:'#0D1B42', mid:'#07102B', bot:'#030812' },
+    pool:['shark','seahorse','seaTurtle','mantaRay','narwhal','hammerheadShark','barracuda','barreleyeFish','anglerfish','goldenSeahorse'],
+    speedMult:1.15, spawnInterval:66,
     challenge:{
-      desc:'Catch 20 creatures inc. a Jellyfish & Octopus!',
-      label:'20 & epic duo',
-      check:s => s.stageCatches >= 20 && s.stageSpecies.has('jellyfish') && s.stageSpecies.has('octopus'),
-      progress:s => ({ cur:Math.min(s.stageCatches,20), max:20,
-                       sub:`🪼${s.stageSpecies.has('jellyfish')?'✅':'❌'} 🐙${s.stageSpecies.has('octopus')?'✅':'❌'}` }),
+      desc:'Catch 25 creatures and a Hammerhead Shark!',
+      label:'25 & Hammerhead',
+      check:s => s.stageCatches >= 25 && s.stageSpecies.has('hammerheadShark'),
+      progress:s => ({ cur:Math.min(s.stageCatches,25), max:25,
+                       sub: s.stageSpecies.has('hammerheadShark') ? '✅ Hammerhead caught!' : '🦈 Need a Hammerhead' }),
     },
-    intro:'The Twilight Zone glows! 🔮\nCatch the epic Jellyfish and Octopus!',
+    intro:'The Midnight Zone! (1000-4000m)\nNo sunlight reaches here.\nHunt 25 creatures — including a Hammerhead!',
   },
   {
-    id:5, name:'Abyssal Wonder',
-    bg:{ top:'#0A0520', mid:'#050212', bot:'#020008' },
-    pool:['shark','jellyfish','octopus','lobster','blueWhale','dragonfish','seaTurtle','narwhal'],
-    speedMult:1.40, spawnInterval:52,
+    id:4, name:'The Abyss',
+    bg:{ top:'#050A20', mid:'#020510', bot:'#010208' },
+    pool:['jellyfish','octopus','lobster','anglerfish','viperfish','barreleyeFish','dumboOctopus','gulperEel','pinkJellyfish','goldLobster'],
+    speedMult:1.35, spawnInterval:56,
     challenge:{
-      desc:'Catch a Legendary creature to complete your Ocean Dex!',
+      desc:'Catch 30 creatures including Anglerfish & Dumbo Octopus!',
+      label:'30 & duo',
+      check:s => s.stageCatches >= 30 && s.stageSpecies.has('anglerfish') && s.stageSpecies.has('dumboOctopus'),
+      progress:s => ({ cur:Math.min(s.stageCatches,30), max:30,
+                       sub:`🎣${s.stageSpecies.has('anglerfish')?'✅':'❌'} 🐙${s.stageSpecies.has('dumboOctopus')?'✅':'❌'}` }),
+    },
+    intro:'The Abyss! (4000-6000m)\nPressure is crushing, darkness total.\nCatch 30 creatures — Anglerfish & Dumbo Octopus await!',
+  },
+  {
+    id:5, name:'Hadal Trenches',
+    bg:{ top:'#020308', mid:'#010204', bot:'#000002' },
+    pool:['blueWhale','dragonfish','giantSquid','gulperEel','viperfish','dumboOctopus','anglerfish','narwhal'],
+    speedMult:1.55, spawnInterval:48,
+    challenge:{
+      desc:'Catch a Legendary to conquer the ocean!',
       label:'1 Legendary!',
-      check:s => s.stageSpecies.has('blueWhale') || s.stageSpecies.has('dragonfish'),
+      check:s => s.stageSpecies.has('blueWhale')||s.stageSpecies.has('dragonfish')||s.stageSpecies.has('giantSquid'),
       progress:s => {
-        const got=s.stageSpecies.has('blueWhale')||s.stageSpecies.has('dragonfish');
-        return { cur:got?1:0, max:1, sub: got?'🏆 Legendary caught!':'Find the Legendary!' };
+        const got=s.stageSpecies.has('blueWhale')||s.stageSpecies.has('dragonfish')||s.stageSpecies.has('giantSquid');
+        return { cur:got?1:0, max:1, sub: got?'🏆 Legendary conquered!':'Hunt the Legendary...' };
       },
     },
-    intro:'The Abyssal Wonder! 🌑\nLegendary creatures lurk here — catch one!',
+    intro:'The Hadal Trenches! (6000m+)\nThe deepest place on Earth.\nCatch a Legendary creature to become the Ocean Master!',
   },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
    COLLECTION / POKÉDEX
    ═══════════════════════════════════════════════════════════════════════════ */
-const SAVE_KEY = 'oceanNetCatch_v2';
+const SAVE_KEY = 'oceanNetCatch_v3';
 const collection = {};   // id -> { count, firstStage }
 CREATURES.forEach(cr => { collection[cr.id] = { count:0, firstStage:null }; });
 
@@ -972,9 +1319,9 @@ function drawBackground(){
     ctx.moveTo(rx-15,0);ctx.lineTo(rx+65,0);ctx.lineTo(rx+100,H*0.65);ctx.lineTo(rx-55,H*0.65);
     ctx.closePath();ctx.fill();
   }
-  // abyss particles (stage 4-5)
-  if(stageIdx>=3){
-    ctx.fillStyle=`rgba(0,229,255,${0.03*(stageIdx-2)})`;
+  // bioluminescent particles (midnight zone and deeper)
+  if(stageIdx>=2){
+    ctx.fillStyle=`rgba(0,229,255,${0.03*(stageIdx-1)})`;
     for(let i=0;i<20;i++){
       const px=(Math.sin(gameTime*0.007+i*2.3)*0.5+0.5)*W;
       const py=(Math.sin(gameTime*0.009+i*1.7)*0.5+0.5)*H;
@@ -1249,7 +1596,7 @@ function drawCreatureOnScreen(c){
     ctx.rotate(p*Math.PI*3); ctx.scale(1-p,1-p); ctx.globalAlpha=1-p;
   } else {
     ctx.translate(0, Math.sin(gameTime*c.wobbleSpeed+c.phase)*c.wobbleAmp);
-    if(c.dx<0 && !c.noFlip) ctx.scale(-1,1);
+    if(c.dx>0 && !c.noFlip) ctx.scale(-1,1);
   }
   ctx.scale(c.scale,c.scale);
   c.draw(ctx);
