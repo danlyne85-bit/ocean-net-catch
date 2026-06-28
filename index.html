@@ -46,6 +46,42 @@ canvas { display:block; cursor:crosshair; touch-action:none; }
 #pw-screen button:hover { transform:scale(1.07); }
 #pw-screen button:active { transform:scale(0.95); }
 #pw-error { color:#FF5252; font-size:clamp(13px,3vw,18px); min-height:24px; }
+#name-modal {
+  display:none; position:fixed; inset:0; z-index:998;
+  background:rgba(0,8,25,.92);
+  flex-direction:column; align-items:center; justify-content:center; gap:16px;
+}
+#name-modal h2 { color:#FFD700; font-size:clamp(24px,5vw,42px); text-shadow:0 0 18px rgba(255,215,0,.6); }
+#name-modal .nm-score { color:#7ee8ff; font-size:clamp(18px,4vw,30px); }
+#name-modal p  { color:#81D4FA; font-size:clamp(13px,3vw,18px); }
+#name-modal input {
+  padding:13px 20px; font-size:clamp(15px,4vw,22px);
+  border-radius:28px; border:3px solid #FFD700;
+  background:rgba(0,0,0,.45); color:#fff; text-align:center;
+  outline:none; width:min(260px,78vw); font-family:inherit;
+}
+#name-modal input::placeholder { color:#4FC3F7; }
+.nm-row { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+.nm-btn {
+  padding:12px 28px; font-size:clamp(14px,3.5vw,20px);
+  border-radius:28px; border:none; cursor:pointer;
+  font-family:inherit; transition:transform .15s;
+}
+.nm-btn:active { transform:scale(0.95); }
+#nm-submit { background:linear-gradient(135deg,#FFD700,#FF8C00); color:#000; font-weight:bold; }
+#nm-skip   { background:rgba(255,255,255,.12); color:#aaa; }
+#lb-btn {
+  position:absolute; top:14px; right:80px;
+  width:60px; height:60px; border-radius:50%;
+  background:linear-gradient(135deg,#FFD700,#FF8C00);
+  border:3px solid #fff; cursor:pointer; font-size:28px;
+  display:none; align-items:center; justify-content:center;
+  box-shadow:0 4px 18px rgba(255,180,0,.5);
+  transition:transform .15s; z-index:10;
+  -webkit-tap-highlight-color:transparent;
+}
+#lb-btn:hover { transform:scale(1.12); }
+#lb-btn:active { transform:scale(0.95); }
 </style>
 </head>
 <body>
@@ -56,8 +92,19 @@ canvas { display:block; cursor:crosshair; touch-action:none; }
   <button id="pw-btn">Dive In!</button>
   <div id="pw-error"></div>
 </div>
+<div id="name-modal">
+  <h2>🏆 Stage Complete!</h2>
+  <div class="nm-score">Final Score: <span id="nm-score-val">0</span></div>
+  <p>Enter your name for the leaderboard:</p>
+  <input id="nm-input" type="text" placeholder="Your name" maxlength="16" autocomplete="off" />
+  <div class="nm-row">
+    <button class="nm-btn" id="nm-submit">Submit Score 🏆</button>
+    <button class="nm-btn" id="nm-skip">Skip</button>
+  </div>
+</div>
 <canvas id="c" style="display:none"></canvas>
 <button id="dex-btn" title="Ocean Dex (P)" style="display:none">📖</button>
+<button id="lb-btn" title="Leaderboard">🏆</button>
 <script>
 'use strict';
 (function(){
@@ -66,6 +113,7 @@ canvas { display:block; cursor:crosshair; touch-action:none; }
     document.getElementById('pw-screen').style.display='none';
     document.getElementById('c').style.display='block';
     document.getElementById('dex-btn').style.display='flex';
+    document.getElementById('lb-btn').style.display='flex';
   }
   function tryPassword(){
     const val=document.getElementById('pw-input').value;
@@ -1159,75 +1207,114 @@ const CREATURES = [
    ═══════════════════════════════════════════════════════════════════════════ */
 const STAGES = [
   {
-    id:1, name:'Sunlight Zone',
+    id:1, name:'Sunlight Zone', type:'cannon',
     bg:{ top:'#81D4FA', mid:'#0288D1', bot:'#01579B' },
     pool:['clownfish','pufferfish','blueTang','blueClownfish','goldenTang','mantisShrimp'],
-    speedMult:0.75, spawnInterval:85,
+    speedMult:0.75, spawnInterval:85, netQuota:25,
     challenge:{
-      desc:'Catch 10 creatures to dive deeper!',
+      desc:'Catch 10 creatures! (25 nets)',
       label:'Catch 10',
-      check:s => s.stageCatches >= 10,
-      progress:s => ({ cur:s.stageCatches, max:10 }),
+      check:s=>s.stageCatches>=10,
+      progress:s=>({cur:s.stageCatches,max:10}),
     },
-    intro:'Welcome to the Sunlight Zone! (0-200m)\nBright waters teem with colorful life!\nCatch 10 creatures to dive deeper!',
+    intro:'Welcome to the Sunlight Zone! (0-200m)\nColorful life teems in the bright waters!\nCatch 10 creatures — 25 nets to use!',
   },
   {
-    id:2, name:'Twilight Zone',
+    id:2, name:'Reef Fishing Spot', type:'fishing',
+    bg:{ top:'#00ACC1', mid:'#00838F', bot:'#006064' },
+    pool:['clownfish','pufferfish','angelfish','starfish','crab','dolphin','mantisShrimp'],
+    castLimit:8, catchTarget:4,
+    tensionRate:{common:0.007,uncommon:0.012,rare:0.018,epic:0.026,legendary:0.04},
+    challenge:{
+      desc:'Catch 4 fish from 8 casts!',
+      label:'4/8 casts',
+      check:s=>s.fishCaught>=4,
+      progress:s=>({cur:s.fishCaught,max:4,sub:`Casts left: ${s.castsLeft}`}),
+    },
+    intro:'Reef Fishing Spot!\nTap to cast — tap again on BITE! to hook.\nTap fast to reel in, but watch the tension!',
+  },
+  {
+    id:3, name:'Twilight Zone', type:'cannon',
     bg:{ top:'#1565C0', mid:'#0D47A1', bot:'#1A237E' },
     pool:['clownfish','angelfish','starfish','crab','dolphin','mantisShrimp','purpleAngelfish','purpleStarfish','morayEel','blueCrab','barracuda'],
-    speedMult:0.95, spawnInterval:76,
+    speedMult:0.95, spawnInterval:76, netQuota:30,
     challenge:{
-      desc:'Catch 18 creatures including 4 different species!',
+      desc:'Catch 18 creatures inc. 4 species! (30 nets)',
       label:'18 & 4 species',
-      check:s => s.stageCatches >= 18 && s.stageSpecies.size >= 4,
-      progress:s => ({ cur:Math.min(s.stageCatches,18), max:18,
-                       sub:`Species: ${s.stageSpecies.size}/4` }),
+      check:s=>s.stageCatches>=18&&s.stageSpecies.size>=4,
+      progress:s=>({cur:Math.min(s.stageCatches,18),max:18,sub:`Species: ${s.stageSpecies.size}/4`}),
     },
-    intro:'The Twilight Zone! (200-1000m)\nLight fades and new creatures emerge!\nCatch 18 creatures — variety matters!',
+    intro:'The Twilight Zone! (200-1000m)\nLight fades, creatures multiply!\nCatch 18 creatures — 30 nets available!',
   },
   {
-    id:3, name:'Midnight Zone',
+    id:4, name:'Midnight Zone', type:'cannon',
     bg:{ top:'#0D1B42', mid:'#07102B', bot:'#030812' },
     pool:['shark','seahorse','seaTurtle','mantaRay','narwhal','hammerheadShark','barracuda','barreleyeFish','anglerfish','goldenSeahorse'],
-    speedMult:1.15, spawnInterval:66,
+    speedMult:1.15, spawnInterval:66, netQuota:35,
     challenge:{
-      desc:'Catch 25 creatures and a Hammerhead Shark!',
+      desc:'Catch 25 + a Hammerhead! (35 nets)',
       label:'25 & Hammerhead',
-      check:s => s.stageCatches >= 25 && s.stageSpecies.has('hammerheadShark'),
-      progress:s => ({ cur:Math.min(s.stageCatches,25), max:25,
-                       sub: s.stageSpecies.has('hammerheadShark') ? '✅ Hammerhead caught!' : '🦈 Need a Hammerhead' }),
+      check:s=>s.stageCatches>=25&&s.stageSpecies.has('hammerheadShark'),
+      progress:s=>({cur:Math.min(s.stageCatches,25),max:25,sub:s.stageSpecies.has('hammerheadShark')?'✅ Hammerhead caught!':'🦈 Need a Hammerhead'}),
     },
-    intro:'The Midnight Zone! (1000-4000m)\nNo sunlight reaches here.\nHunt 25 creatures — including a Hammerhead!',
+    intro:'The Midnight Zone! (1000-4000m)\nNo sunlight reaches here — hunt carefully!\nCatch 25 + Hammerhead — 35 nets!',
   },
   {
-    id:4, name:'The Abyss',
+    id:5, name:'Deep Fishing Grounds', type:'fishing',
+    bg:{ top:'#1A237E', mid:'#0D1357', bot:'#050A30' },
+    pool:['shark','seahorse','seaTurtle','mantaRay','narwhal','hammerheadShark','anglerfish','barreleyeFish'],
+    castLimit:10, catchTarget:5,
+    tensionRate:{common:0.010,uncommon:0.016,rare:0.024,epic:0.034,legendary:0.052},
+    challenge:{
+      desc:'Catch 5 deep fish from 10 casts!',
+      label:'5/10 casts',
+      check:s=>s.fishCaught>=5,
+      progress:s=>({cur:s.fishCaught,max:5,sub:`Casts left: ${s.castsLeft}`}),
+    },
+    intro:'Deep Fishing Grounds!\nDarker water, fiercer fish, snappier lines.\nCatch 5 from 10 casts!',
+  },
+  {
+    id:6, name:'The Abyss', type:'cannon',
     bg:{ top:'#050A20', mid:'#020510', bot:'#010208' },
     pool:['jellyfish','octopus','lobster','anglerfish','viperfish','barreleyeFish','dumboOctopus','gulperEel','pinkJellyfish','goldLobster'],
-    speedMult:1.35, spawnInterval:56,
+    speedMult:1.35, spawnInterval:56, netQuota:40,
     challenge:{
-      desc:'Catch 30 creatures including Anglerfish & Dumbo Octopus!',
+      desc:'Catch 30 + Anglerfish & Dumbo! (40 nets)',
       label:'30 & duo',
-      check:s => s.stageCatches >= 30 && s.stageSpecies.has('anglerfish') && s.stageSpecies.has('dumboOctopus'),
-      progress:s => ({ cur:Math.min(s.stageCatches,30), max:30,
-                       sub:`🎣${s.stageSpecies.has('anglerfish')?'✅':'❌'} 🐙${s.stageSpecies.has('dumboOctopus')?'✅':'❌'}` }),
+      check:s=>s.stageCatches>=30&&s.stageSpecies.has('anglerfish')&&s.stageSpecies.has('dumboOctopus'),
+      progress:s=>({cur:Math.min(s.stageCatches,30),max:30,sub:`🎣${s.stageSpecies.has('anglerfish')?'✅':'❌'} 🐙${s.stageSpecies.has('dumboOctopus')?'✅':'❌'}`}),
     },
-    intro:'The Abyss! (4000-6000m)\nPressure is crushing, darkness total.\nCatch 30 creatures — Anglerfish & Dumbo Octopus await!',
+    intro:'The Abyss! (4000-6000m)\nPressure crushing, darkness total.\nCatch 30 creatures — 40 nets!',
   },
   {
-    id:5, name:'Hadal Trenches',
+    id:7, name:'Hadal Fishing', type:'fishing',
+    bg:{ top:'#020308', mid:'#010204', bot:'#000002' },
+    pool:['jellyfish','octopus','dumboOctopus','gulperEel','viperfish','anglerfish','blueWhale','giantSquid'],
+    castLimit:8, catchTarget:4,
+    tensionRate:{common:0.013,uncommon:0.020,rare:0.030,epic:0.042,legendary:0.060},
+    challenge:{
+      desc:'Catch 4 abyssal fish from 8 casts!',
+      label:'4/8 casts',
+      check:s=>s.fishCaught>=4,
+      progress:s=>({cur:s.fishCaught,max:4,sub:`Casts left: ${s.castsLeft}`}),
+    },
+    intro:'Hadal Fishing!\nThe void beneath all voids.\nCatch 4 from 8 casts — lines snap easily here!',
+  },
+  {
+    id:8, name:'Hadal Trenches', type:'cannon',
     bg:{ top:'#020308', mid:'#010204', bot:'#000002' },
     pool:['blueWhale','dragonfish','giantSquid','gulperEel','viperfish','dumboOctopus','anglerfish','narwhal'],
-    speedMult:1.55, spawnInterval:48,
+    speedMult:1.55, spawnInterval:48, netQuota:45,
     challenge:{
       desc:'Catch a Legendary to conquer the ocean!',
       label:'1 Legendary!',
-      check:s => s.stageSpecies.has('blueWhale')||s.stageSpecies.has('dragonfish')||s.stageSpecies.has('giantSquid'),
-      progress:s => {
+      check:s=>s.stageSpecies.has('blueWhale')||s.stageSpecies.has('dragonfish')||s.stageSpecies.has('giantSquid'),
+      progress:s=>{
         const got=s.stageSpecies.has('blueWhale')||s.stageSpecies.has('dragonfish')||s.stageSpecies.has('giantSquid');
-        return { cur:got?1:0, max:1, sub: got?'🏆 Legendary conquered!':'Hunt the Legendary...' };
+        return{cur:got?1:0,max:1,sub:got?'🏆 Legendary conquered!':'Hunt the Legendary...'};
       },
     },
-    intro:'The Hadal Trenches! (6000m+)\nThe deepest place on Earth.\nCatch a Legendary creature to become the Ocean Master!',
+    intro:'The Hadal Trenches! (6000m+)\nThe deepest place on Earth.\nCatch a Legendary — 45 nets — become Ocean Master!',
   },
 ];
 
@@ -1252,6 +1339,15 @@ function saveHighScore(){
 }
 function loadHighScore(){
   try{highScore=parseInt(localStorage.getItem('oceanNetCatch_hs')||'0');}catch(e){}
+}
+function loadLeaderboard(){
+  try{leaderboard=JSON.parse(localStorage.getItem(LB_KEY)||'[]');}catch(e){leaderboard=[];}
+}
+function saveToLeaderboard(name,sc){
+  leaderboard.push({name:name||'Anonymous',score:sc,date:new Date().toLocaleDateString()});
+  leaderboard.sort((a,b)=>b.score-a.score);
+  leaderboard=leaderboard.slice(0,10);
+  try{localStorage.setItem(LB_KEY,JSON.stringify(leaderboard));}catch(e){}
 }
 
 /* ─── Rarity colours ─────────────────────────────────────────────────────── */
@@ -1291,7 +1387,7 @@ let stageIdx=0;
 let stageCatches=0;
 let stageSpecies=new Set();
 
-// Screen: 'playing' | 'stageClear' | 'pokédex' | 'intro'
+// Screen: 'playing'|'stageClear'|'stageFail'|'pokédex'|'intro'|'leaderboard'|'fishing'
 let screen='intro';
 let introTimer=0;
 const INTRO_DURATION=200; // frames to show stage intro
@@ -1315,6 +1411,32 @@ let _dexTouchY=0;
 
 let gameTime=0;
 
+/* ─── Net quota (cannon stages) ─────────────────────────────────────────── */
+let netsUsed=0;
+let stageFailTimer=0;
+
+/* ─── Fishing stage state ────────────────────────────────────────────────── */
+const FISH={
+  state:'idle',   // idle|sinking|bite_window|hooked|break|success
+  lineX:0, tipY:0, sinkSpeed:3.5,
+  creature:null,
+  tension:0,
+  biteTimer:0, biteWindow:90,
+  biteCreature:null,
+  cooldown:0,
+  castsDone:0,
+  caughtThisStage:0,
+  breakAnim:0,
+  successAnim:0,
+  reelTaps:0,
+  lastReelFrame:0,
+};
+
+/* ─── Leaderboard ────────────────────────────────────────────────────────── */
+const LB_KEY='oceanNetCatch_lb_v1';
+let leaderboard=[];
+let lbFromScreen='playing';
+
 /* ─── Combo + Power-ups ─────────────────────────────────────────────────── */
 let combo=1, comboTimer=0;
 const COMBO_DURATION=180; // 3 s at 60 fps
@@ -1331,12 +1453,20 @@ const POWERUP_SPAWN_INTERVAL=520;
 
 /* ─── Stage transition ───────────────────────────────────────────────────── */
 function gotoStage(idx){
-  if(idx >= STAGES.length){ screen='playing'; return; }
+  if(idx >= STAGES.length){
+    // Game complete — prompt leaderboard name entry
+    saveHighScore();
+    document.getElementById('nm-score-val').textContent=score;
+    document.getElementById('name-modal').style.display='flex';
+    document.getElementById('nm-input').focus();
+    return;
+  }
   stageIdx=idx;
   stageCatches=0;
   stageSpecies=new Set();
   creatures.length=0; nets.length=0; powerups.length=0;
   combo=1; comboTimer=0; activeEffect=null; effectTimer=0; powerupSpawnTimer=0;
+  netsUsed=0; stageFailTimer=0;
   if(_stageClearTimeout){clearTimeout(_stageClearTimeout);_stageClearTimeout=null;}
   bgFrom={...bgTo};
   bgTo={...STAGES[stageIdx].bg};
@@ -1344,6 +1474,30 @@ function gotoStage(idx){
   spawnTimer=0;
   screen='intro';
   introTimer=0;
+  // reset fishing state for fishing stages
+  if(STAGES[stageIdx].type==='fishing'){
+    FISH.state='idle'; FISH.tipY=0; FISH.creature=null;
+    FISH.tension=0; FISH.biteTimer=0; FISH.biteCreature=null;
+    FISH.cooldown=0; FISH.castsDone=0; FISH.caughtThisStage=0;
+    FISH.breakAnim=0; FISH.successAnim=0;
+    FISH.lineX=W/2;
+  }
+}
+function retryStage(){
+  const idx=stageIdx;
+  stageCatches=0; stageSpecies=new Set();
+  creatures.length=0; nets.length=0; powerups.length=0;
+  combo=1; comboTimer=0; activeEffect=null; effectTimer=0; powerupSpawnTimer=0;
+  netsUsed=0; stageFailTimer=0;
+  if(_stageClearTimeout){clearTimeout(_stageClearTimeout);_stageClearTimeout=null;}
+  spawnTimer=0; screen='intro'; introTimer=0;
+  if(STAGES[idx].type==='fishing'){
+    FISH.state='idle'; FISH.tipY=0; FISH.creature=null;
+    FISH.tension=0; FISH.biteTimer=0; FISH.biteCreature=null;
+    FISH.cooldown=0; FISH.castsDone=0; FISH.caughtThisStage=0;
+    FISH.breakAnim=0; FISH.successAnim=0;
+    FISH.lineX=W/2;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1514,7 +1668,10 @@ function drawCannon(){
    NET
    ═══════════════════════════════════════════════════════════════════════════ */
 function fireNet(){
+  const stage=STAGES[stageIdx];
+  if(stage.type==='cannon' && netsUsed>=stage.netQuota) return;
   cannon.recoil=1;
+  netsUsed++;
   const tip=74;
   const maxR=activeEffect==='wideNet'?Math.round(CFG.netMaxRadius*1.72):CFG.netMaxRadius;
   nets.push({
@@ -1761,6 +1918,14 @@ function drawHUD(){
     ctx.fillText(ct,W-16,91);
     ctx.shadowBlur=0;
   }
+
+  // nets remaining (bottom-left)
+  const netsLeft=stage.netQuota-netsUsed;
+  const netColor=netsLeft<=5?'#FF5252':netsLeft<=10?'#FF9800':'rgba(200,240,255,.85)';
+  ctx.fillStyle=netColor;
+  ctx.font='bold 14px Comic Sans MS,cursive';
+  ctx.textAlign='left';
+  ctx.fillText(`🎯 ${netsLeft} nets left`,10,H-16);
 
   // challenge progress (left of center)
   ctx.textAlign='left';
@@ -2063,6 +2228,385 @@ function hexToRgb(hex){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   STAGE FAIL SCREEN
+   ═══════════════════════════════════════════════════════════════════════════ */
+let _stageFailBtn=null;
+function drawStageFailScreen(){
+  stageFailTimer++;
+  ctx.save();
+  ctx.fillStyle='rgba(80,0,0,.88)';ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=Math.min(1,stageFailTimer/30);
+  // title
+  ctx.fillStyle='#FF5252';
+  ctx.shadowColor='rgba(255,50,50,.8)';ctx.shadowBlur=22;
+  ctx.font='bold 52px Comic Sans MS,cursive';
+  ctx.textAlign='center';
+  ctx.fillText('💥 Stage Failed! 💥',W/2,H/2-90);
+  ctx.shadowBlur=0;
+  const stage=STAGES[stageIdx];
+  ctx.fillStyle='#ffcdd2';
+  ctx.font='24px Comic Sans MS,cursive';
+  const failReason=stage.type==='fishing'?'Ran out of casts':'Ran out of nets';
+  ctx.fillText(`${failReason} on Stage ${stage.id}: ${stage.name}`,W/2,H/2-40);
+  ctx.fillStyle='#FFF';
+  ctx.font='20px Comic Sans MS,cursive';
+  ctx.fillText(`Creatures caught: ${stageCatches}   Score so far: ${score}`,W/2,H/2+4);
+  ctx.fillStyle='rgba(255,200,200,.7)';
+  ctx.font='17px Comic Sans MS,cursive';
+  ctx.fillText(stage.challenge.desc,W/2,H/2+36);
+  // buttons
+  if(stageFailTimer>50){
+    const pulse=Math.sin(stageFailTimer*.1)*.3+.7;
+    // Retry button
+    const rW=200,rH=52,rX=W/2-rW-14,rY=H/2+80;
+    ctx.fillStyle=`rgba(${Math.round(220*pulse)},${Math.round(60*pulse)},${Math.round(60*pulse)},1)`;
+    ctx.beginPath();ctx.roundRect(rX,rY,rW,rH,26);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(rX,rY,rW,rH,26);ctx.stroke();
+    ctx.fillStyle='#FFF';ctx.font='bold 22px Comic Sans MS,cursive';
+    ctx.fillText('🔄 Retry',W/2-rW/2-14+rW/2,rY+35);
+    // Quit button
+    const qX=W/2+14,qY=H/2+80;
+    ctx.fillStyle='rgba(50,50,80,.9)';
+    ctx.beginPath();ctx.roundRect(qX,qY,rW,rH,26);ctx.fill();
+    ctx.beginPath();ctx.roundRect(qX,qY,rW,rH,26);ctx.stroke();
+    ctx.fillStyle='#aaa';ctx.font='bold 22px Comic Sans MS,cursive';
+    ctx.fillText('🏠 Quit',qX+rW/2,qY+35);
+    _stageFailBtn={retry:{x:rX,y:rY,w:rW,h:rH},quit:{x:qX,y:qY,w:rW,h:rH}};
+  } else {_stageFailBtn=null;}
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEADERBOARD SCREEN
+   ═══════════════════════════════════════════════════════════════════════════ */
+let _lbBackBtn=null;
+function drawLeaderboard(){
+  ctx.save();
+  ctx.fillStyle='rgba(0,5,20,.96)';ctx.fillRect(0,0,W,H);
+  // header
+  ctx.fillStyle='#FFD700';
+  ctx.shadowColor='rgba(255,215,0,.7)';ctx.shadowBlur=20;
+  ctx.font='bold 46px Comic Sans MS,cursive';
+  ctx.textAlign='center';
+  ctx.fillText('🏆 Leaderboard',W/2,70);
+  ctx.shadowBlur=0;
+  if(leaderboard.length===0){
+    ctx.fillStyle='rgba(150,180,220,.7)';
+    ctx.font='22px Comic Sans MS,cursive';
+    ctx.fillText('No scores yet — be the first!',W/2,H/2);
+  } else {
+    const rowH=52, startY=110, colW=Math.min(520,W*.85), lx=(W-colW)/2;
+    leaderboard.forEach((entry,i)=>{
+      const ry=startY+i*rowH;
+      // row bg
+      const gold=i===0,silver=i===1,bronze=i===2;
+      ctx.fillStyle=gold?'rgba(255,215,0,.13)':silver?'rgba(192,192,192,.1)':bronze?'rgba(205,127,50,.1)':'rgba(255,255,255,.04)';
+      ctx.beginPath();ctx.roundRect(lx,ry,colW,rowH-4,8);ctx.fill();
+      ctx.strokeStyle=gold?'#FFD700':silver?'#C0C0C0':bronze?'#CD7F32':'rgba(100,150,200,.2)';
+      ctx.lineWidth=gold||silver||bronze?2:1;
+      ctx.beginPath();ctx.roundRect(lx,ry,colW,rowH-4,8);ctx.stroke();
+      // rank medal
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+      ctx.font=`bold ${i<3?26:20}px Comic Sans MS,cursive`;
+      ctx.fillStyle=gold?'#FFD700':silver?'#C0C0C0':bronze?'#CD7F32':'#aaa';
+      ctx.textAlign='left';
+      ctx.fillText(medal,lx+12,ry+rowH/2+8);
+      // name
+      ctx.fillStyle='#FFF';
+      ctx.font='bold 20px Comic Sans MS,cursive';
+      ctx.fillText(entry.name,lx+70,ry+rowH/2+8);
+      // score
+      ctx.fillStyle='#7ee8ff';
+      ctx.font='bold 22px Comic Sans MS,cursive';
+      ctx.textAlign='right';
+      ctx.fillText(entry.score,lx+colW-100,ry+rowH/2+8);
+      // date
+      ctx.fillStyle='rgba(150,180,220,.6)';
+      ctx.font='13px Comic Sans MS,cursive';
+      ctx.fillText(entry.date,lx+colW-10,ry+rowH/2+8);
+    });
+  }
+  // back button
+  const bW=200,bH=50,bX=W/2-bW/2,bY=H-90;
+  ctx.fillStyle='rgba(2,136,209,.85)';
+  ctx.beginPath();ctx.roundRect(bX,bY,bW,bH,25);ctx.fill();
+  ctx.fillStyle='#FFF';ctx.font='bold 22px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('← Back',W/2,bY+34);
+  _lbBackBtn={x:bX,y:bY,w:bW,h:bH};
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FISHING STAGE
+   ═══════════════════════════════════════════════════════════════════════════ */
+const BOAT_Y=60; // y of boat center
+function drawFishingBoat(){
+  const bx=FISH.lineX;
+  // water surface ripple
+  ctx.strokeStyle='rgba(100,200,255,.3)';ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let x=0;x<W;x+=40){
+    const wy=BOAT_Y+30+Math.sin(gameTime*.04+x*.05)*4;
+    x===0?ctx.moveTo(x,wy):ctx.lineTo(x,wy);
+  }
+  ctx.stroke();
+  // hull
+  ctx.fillStyle='#5D4037';
+  ctx.beginPath();
+  ctx.moveTo(bx-44,BOAT_Y+22);ctx.lineTo(bx+44,BOAT_Y+22);
+  ctx.lineTo(bx+36,BOAT_Y+40);ctx.lineTo(bx-36,BOAT_Y+40);
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle='#795548';
+  ctx.fillRect(bx-44,BOAT_Y+16,88,10);
+  // mast
+  ctx.strokeStyle='#4E342E';ctx.lineWidth=5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(bx-8,BOAT_Y+18);ctx.lineTo(bx-8,BOAT_Y-30);ctx.stroke();
+  // rod
+  ctx.strokeStyle='#8D6E63';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(bx-8,BOAT_Y-28);ctx.lineTo(bx+30,BOAT_Y-10);ctx.stroke();
+  // line rod tip
+  const rodTipX=bx+30, rodTipY=BOAT_Y-10;
+  // fishing line
+  if(FISH.state!=='idle'){
+    const tension=FISH.tension;
+    ctx.strokeStyle=tension>0.7?`rgba(255,${Math.round(200*(1-tension))},0,.9)`:'rgba(200,230,255,.75)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(rodTipX,rodTipY);
+    // slight curve based on tension
+    const midX=rodTipX+(FISH.lineX-rodTipX)*0.5+Math.sin(gameTime*.03)*6*(1-tension);
+    ctx.quadraticCurveTo(midX,FISH.tipY*0.5,FISH.lineX,FISH.tipY);
+    ctx.stroke();
+    // hook
+    ctx.strokeStyle='#90A4AE';ctx.lineWidth=2.5;ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.arc(FISH.lineX,FISH.tipY+6,7,-Math.PI*0.1,Math.PI*0.8);
+    ctx.stroke();
+    ctx.beginPath();ctx.moveTo(FISH.lineX-7,FISH.tipY+6);ctx.lineTo(FISH.lineX-10,FISH.tipY+2);ctx.stroke();
+  }
+}
+
+function drawFishingHUD(){
+  const stage=STAGES[stageIdx];
+  const castsLeft=stage.castLimit-FISH.castsDone;
+  // top bar
+  ctx.fillStyle='rgba(0,10,30,.6)';
+  ctx.beginPath();ctx.roundRect(0,0,W,70,0);ctx.fill();
+  ctx.fillStyle='#7ee8ff';
+  ctx.font='bold 22px Comic Sans MS,cursive';
+  ctx.textAlign='center';
+  ctx.shadowColor='rgba(0,180,255,.7)';ctx.shadowBlur=10;
+  ctx.fillText(`Stage ${stage.id}: ${stage.name}`,W/2,30);
+  ctx.shadowBlur=0;
+  // score
+  ctx.fillStyle='#FFD700';ctx.font='bold 28px Comic Sans MS,cursive';
+  ctx.textAlign='right';ctx.shadowColor='rgba(255,215,0,.6)';ctx.shadowBlur=8;
+  ctx.fillText(`${score}`,W-20,38);ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,220,100,.7)';ctx.font='12px Comic Sans MS,cursive';
+  ctx.fillText('SCORE',W-20,52);
+
+  // casts remaining (left)
+  ctx.textAlign='left';
+  ctx.fillStyle='rgba(200,240,255,.9)';ctx.font='bold 16px Comic Sans MS,cursive';
+  ctx.fillText(`🎣 Casts left: ${castsLeft}`,80,24);
+  ctx.fillStyle='rgba(200,240,255,.7)';ctx.font='13px Comic Sans MS,cursive';
+  ctx.fillText(`Caught: ${FISH.caughtThisStage}/${stage.catchTarget}`,80,44);
+
+  // tension bar (when hooked)
+  if(FISH.state==='hooked'){
+    const bx=W/2-100,by=H-80,bw=200,bh=18;
+    ctx.fillStyle='rgba(0,0,0,.6)';
+    ctx.beginPath();ctx.roundRect(bx-2,by-2,bw+4,bh+4,10);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.12)';
+    ctx.beginPath();ctx.roundRect(bx,by,bw,bh,9);ctx.fill();
+    const tpct=FISH.tension;
+    const tcol=tpct<0.5?`rgb(${Math.round(tpct*2*255)},220,0)`:`rgb(255,${Math.round((1-tpct)*2*220)},0)`;
+    ctx.fillStyle=tcol;
+    ctx.beginPath();ctx.roundRect(bx,by,bw*tpct,bh,9);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(bx,by,bw,bh,9);ctx.stroke();
+    ctx.fillStyle='#FFF';ctx.font='bold 14px Comic Sans MS,cursive';ctx.textAlign='center';
+    ctx.fillText(`TENSION — TAP FAST!`,W/2,by-8);
+    // reel prompt pulse
+    const pulse=Math.sin(gameTime*.18)*.5+.5;
+    ctx.fillStyle=`rgba(255,${Math.round(200*pulse)},0,${0.6+pulse*.4})`;
+    ctx.font=`bold ${22+pulse*4}px Comic Sans MS,cursive`;
+    ctx.fillText('🎣 REEL!',W/2,H-100);
+  }
+
+  // state prompts
+  if(FISH.state==='idle'){
+    if(castsLeft>0){
+      const pulse=Math.sin(gameTime*.1)*.4+.6;
+      ctx.fillStyle=`rgba(100,230,255,${pulse})`;
+      ctx.font='bold 28px Comic Sans MS,cursive';ctx.textAlign='center';
+      ctx.fillText('TAP TO CAST 🎣',W/2,H/2);
+    }
+  } else if(FISH.state==='sinking'){
+    ctx.fillStyle='rgba(150,220,255,.55)';
+    ctx.font='18px Comic Sans MS,cursive';ctx.textAlign='center';
+    ctx.fillText('Line sinking...',W/2,H-50);
+  } else if(FISH.state==='bite_window'){
+    const pulse=Math.sin(gameTime*.22)*.5+.5;
+    ctx.fillStyle=`rgba(255,${Math.round(220+pulse*35)},0,${0.7+pulse*.3})`;
+    ctx.font=`bold ${30+pulse*6}px Comic Sans MS,cursive`;ctx.textAlign='center';
+    ctx.shadowColor='rgba(255,150,0,.8)';ctx.shadowBlur=14;
+    ctx.fillText('🐟 BITE! TAP!',W/2,H/2+40);
+    ctx.shadowBlur=0;
+  } else if(FISH.state==='break'){
+    const a=Math.max(0,1-FISH.breakAnim/60);
+    ctx.fillStyle=`rgba(255,80,80,${a})`;
+    ctx.font='bold 36px Comic Sans MS,cursive';ctx.textAlign='center';
+    ctx.shadowColor='rgba(255,0,0,.7)';ctx.shadowBlur=16;
+    ctx.fillText('💥 LINE SNAPPED!',W/2,H/2-20);
+    ctx.shadowBlur=0;
+  } else if(FISH.state==='success'){
+    const a=Math.max(0,1-FISH.successAnim/60);
+    ctx.fillStyle=`rgba(100,255,150,${a})`;
+    ctx.font='bold 36px Comic Sans MS,cursive';ctx.textAlign='center';
+    ctx.shadowColor='rgba(0,255,100,.7)';ctx.shadowBlur=16;
+    ctx.fillText('✅ CAUGHT!',W/2,H/2-20);
+    ctx.shadowBlur=0;
+  }
+
+  // popups
+  popups.forEach(p=>{
+    ctx.save();ctx.globalAlpha=p.life;
+    ctx.font=`bold ${p.size}px Comic Sans MS,cursive`;
+    ctx.textAlign='center';
+    ctx.strokeStyle='rgba(0,0,0,.8)';ctx.lineWidth=4;
+    ctx.strokeText(p.text,p.x,p.y);
+    ctx.fillStyle=p.color;ctx.fillText(p.text,p.x,p.y);
+    ctx.restore();
+  });
+}
+
+function updateFishing(){
+  const stage=STAGES[stageIdx];
+  const castsLeft=stage.castLimit-FISH.castsDone;
+
+  // auto-check stage clear
+  if(FISH.caughtThisStage>=stage.catchTarget && !_stageClearTimeout){
+    _stageClearTimeout=setTimeout(()=>{screen='stageClear';_stageClearTimeout=null;},800);
+  }
+  // auto-fail if no casts left and not enough caught
+  if(castsLeft<=0 && FISH.state==='idle' && FISH.caughtThisStage<stage.catchTarget && !_stageClearTimeout){
+    _stageClearTimeout=setTimeout(()=>{screen='stageFail';stageFailTimer=0;_stageClearTimeout=null;},600);
+  }
+
+  if(FISH.cooldown>0){ FISH.cooldown--; return; }
+
+  if(FISH.state==='sinking'){
+    FISH.tipY+=FISH.sinkSpeed;
+    // check bite: any creature near hook?
+    if(FISH.biteCreature===null){
+      for(const cr of creatures){
+        if(cr.captured) continue;
+        const dx=cr.x-FISH.lineX, dy=cr.y-FISH.tipY;
+        if(Math.abs(dx)<70&&Math.abs(dy)<55){
+          FISH.biteCreature=cr;
+          FISH.state='bite_window';
+          FISH.biteTimer=FISH.biteWindow;
+          break;
+        }
+      }
+    }
+    // line reached bottom → retract silently
+    if(FISH.tipY>H-60){
+      FISH.tipY=H-60;
+      FISH.state='idle';
+      FISH.castsDone++;
+      FISH.biteCreature=null;
+      FISH.cooldown=40;
+    }
+  } else if(FISH.state==='bite_window'){
+    FISH.biteTimer--;
+    // keep hook position near creature
+    if(FISH.biteCreature) FISH.tipY=FISH.biteCreature.y;
+    if(FISH.biteTimer<=0){
+      // missed the bite window
+      FISH.state='idle';
+      FISH.castsDone++;
+      FISH.biteCreature=null;
+      FISH.cooldown=50;
+      popups.push({x:W/2,y:H/2-60,text:'Missed! 🐟',color:'#FF9800',life:1,size:26,dy:-1.5});
+    }
+  } else if(FISH.state==='hooked'){
+    // tension slowly decreases when not reeling
+    const framesSinceReel=gameTime-FISH.lastReelFrame;
+    if(framesSinceReel>6) FISH.tension=Math.max(0,FISH.tension-0.003);
+    // line break
+    if(FISH.tension>=1.0){
+      FISH.state='break';
+      FISH.breakAnim=0;
+      FISH.castsDone++;
+      FISH.biteCreature=null;
+      if(FISH.creature){ FISH.creature.captured=false; FISH.creature=null; }
+      popups.push({x:W/2,y:H/2-80,text:'Line Snapped! 💥',color:'#FF5252',life:1,size:30,dy:-1.5});
+    }
+    // success: creature reaches boat
+    if(FISH.tipY<=BOAT_Y+80){
+      FISH.state='success';
+      FISH.successAnim=0;
+      FISH.castsDone++;
+      if(FISH.creature){
+        const cr=FISH.creature;
+        const mult=combo*(activeEffect==='doublePoints'?2:1);
+        const earned=cr.pts*mult;
+        score+=earned; totalCatches++; stageCatches++; stageSpecies.add(cr.id);
+        FISH.caughtThisStage++;
+        saveHighScore();
+        const isNew=collection[cr.id].count===0;
+        collection[cr.id].count++;
+        if(!collection[cr.id].firstStage) collection[cr.id].firstStage=stage.id;
+        saveCollection();
+        burst(W/2,BOAT_Y+50,20);
+        popups.push({x:W/2,y:BOAT_Y+20,text:`+${earned}${isNew?' 🆕':''}`,color:isNew?'#FFD700':RARITY_COLOR[cr.rarity],life:1,size:34,dy:-2});
+        cr.captured=true;
+        FISH.creature=null;
+      }
+      FISH.biteCreature=null;
+    }
+  } else if(FISH.state==='break'){
+    FISH.breakAnim++;
+    if(FISH.breakAnim>80){ FISH.state='idle'; FISH.tension=0; FISH.cooldown=30; }
+  } else if(FISH.state==='success'){
+    FISH.successAnim++;
+    if(FISH.successAnim>80){ FISH.state='idle'; FISH.tension=0; FISH.tipY=0; FISH.cooldown=30; }
+  }
+}
+
+function fishingTap(){
+  const stage=STAGES[stageIdx];
+  const castsLeft=stage.castLimit-FISH.castsDone;
+  if(FISH.cooldown>0) return;
+  if(FISH.state==='idle'){
+    if(castsLeft<=0) return;
+    FISH.state='sinking';
+    FISH.tipY=BOAT_Y+60;
+    FISH.biteCreature=null;
+    FISH.tension=0;
+  } else if(FISH.state==='bite_window'){
+    // hook the creature!
+    const cr=FISH.biteCreature;
+    if(cr&&!cr.captured){
+      FISH.state='hooked';
+      FISH.creature=cr;
+      FISH.tension=0;
+      FISH.lastReelFrame=gameTime;
+      cr.dx=0; cr.dy=0; // freeze creature
+    }
+  } else if(FISH.state==='hooked'){
+    // reel: pull line up, increase tension
+    FISH.tipY=Math.max(BOAT_Y+80,FISH.tipY-12);
+    const cr=FISH.creature;
+    const rate=cr?stage.tensionRate[cr.rarity]||0.02:0.02;
+    FISH.tension=Math.min(1.0,FISH.tension+rate);
+    FISH.lastReelFrame=gameTime;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MAIN LOOP
    ═══════════════════════════════════════════════════════════════════════════ */
 function loop(){
@@ -2076,31 +2620,33 @@ function loop(){
   drawCorals();
   drawSeabed();
 
+  const currentStage=STAGES[stageIdx];
+  const isFishing=currentStage&&currentStage.type==='fishing';
+
   if(screen==='intro'){
     introTimer++;
-    drawCannon();
+    if(!isFishing) drawCannon();
     drawIntroScreen();
-    if(introTimer>=INTRO_DURATION) screen='playing';
+    if(introTimer>=INTRO_DURATION) screen=isFishing?'fishing':'playing';
   } else if(screen==='playing'){
     // timers
     if(comboTimer>0){comboTimer--;if(comboTimer===0)combo=1;}
     if(effectTimer>0){effectTimer--;}else{activeEffect=null;}
     // spawn creatures
-    const si=Math.max(CFG.spawnMin, STAGES[stageIdx].spawnInterval - Math.floor(score/120)*4);
+    const si=Math.max(CFG.spawnMin, currentStage.spawnInterval - Math.floor(score/120)*4);
     if(++spawnTimer>=si){spawnCreature();spawnTimer=0;}
     // spawn powerups
     if(++powerupSpawnTimer>=POWERUP_SPAWN_INTERVAL){spawnPowerup();powerupSpawnTimer=0;}
-
     // update creatures
     const sf=activeEffect==='freeze'?0.25:1;
     for(let i=creatures.length-1;i>=0;i--){
       const c=creatures[i];
-      if(c.captured){ c.captureT++; if(c.captureT>45)creatures.splice(i,1); continue; }
+      if(c.captured){c.captureT++;if(c.captureT>45)creatures.splice(i,1);continue;}
       c.x+=c.dx*sf; c.y+=c.dy*sf;
-      if(c.x<-150||c.x>W+150) creatures.splice(i,1);
+      if(c.y<60)c.dy=Math.abs(c.dy); if(c.y>H-70)c.dy=-Math.abs(c.dy);
+      if(c.x<-150||c.x>W+150)creatures.splice(i,1);
     }
     creatures.forEach(c=>drawCreatureOnScreen(c));
-
     // update + draw powerups
     for(let pi=powerups.length-1;pi>=0;pi--){
       const pu=powerups[pi];
@@ -2109,7 +2655,6 @@ function loop(){
       if(!pu.active||pu.y<-60){powerups.splice(pi,1);continue;}
       drawPowerup(pu);
     }
-
     // update nets
     for(let i=nets.length-1;i>=0;i--){
       const n=nets[i];
@@ -2122,9 +2667,18 @@ function loop(){
       if(n.active) drawNet(n);
       else { n.age+=3; if(n.age>CFG.netLifetime+8) nets.splice(i,1); }
     }
-
     checkCollisions();
-
+    // check net quota fail
+    if(!_stageClearTimeout&&screen==='playing'){
+      const netsLeft=currentStage.netQuota-netsUsed;
+      const anyActive=nets.some(n=>n.active||n.age<=CFG.netLifetime+8);
+      if(netsLeft<=0&&!anyActive&&!currentStage.challenge.check({stageCatches,stageSpecies})){
+        _stageClearTimeout=setTimeout(()=>{
+          if(screen==='playing'){screen='stageFail';stageFailTimer=0;}
+          _stageClearTimeout=null;
+        },500);
+      }
+    }
     // particles
     for(let i=particles.length-1;i>=0;i--){
       const p=particles[i];
@@ -2132,15 +2686,38 @@ function loop(){
       if(p.life<=0) particles.splice(i,1);
     }
     drawParticles();
-
     // popups
     for(let i=popups.length-1;i>=0;i--){
       const p=popups[i]; p.y+=p.dy; p.life-=0.021;
       if(p.life<=0) popups.splice(i,1);
     }
-
     drawCannon();
     drawHUD();
+
+  } else if(screen==='fishing'){
+    // spawn creatures for fishing stage
+    const fsi=Math.max(CFG.spawnMin, currentStage.spawnInterval - Math.floor(score/120)*4);
+    if(++spawnTimer>=fsi){spawnCreature();spawnTimer=0;}
+    for(let i=creatures.length-1;i>=0;i--){
+      const c=creatures[i];
+      if(c.captured){c.captureT++;if(c.captureT>45)creatures.splice(i,1);continue;}
+      if(FISH.creature!==c){c.x+=c.dx;}
+      if(c.y<90)c.dy=Math.abs(c.dy); if(c.y>H-70)c.dy=-Math.abs(c.dy);
+      c.y+=c.dy;
+      if(c.x<-160||c.x>W+160)creatures.splice(i,1);
+    }
+    creatures.forEach(c=>drawCreatureOnScreen(c));
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];p.x+=p.dx;p.y+=p.dy;p.dy+=0.11;p.life-=p.decay;
+      if(p.life<=0)particles.splice(i,1);
+    }
+    drawParticles();
+    for(let i=popups.length-1;i>=0;i--){
+      const p=popups[i];p.y+=p.dy;p.life-=0.021;if(p.life<=0)popups.splice(i,1);
+    }
+    updateFishing();
+    drawFishingBoat();
+    drawFishingHUD();
 
   } else if(screen==='stageClear'){
     creatures.forEach(c=>drawCreatureOnScreen(c));
@@ -2150,8 +2727,15 @@ function loop(){
       if(p.life<=0)particles.splice(i,1);
     }
     drawParticles();
-    drawCannon();
+    if(!isFishing) drawCannon();
     drawStageClearScreen();
+
+  } else if(screen==='stageFail'){
+    if(!isFishing) drawCannon();
+    drawStageFailScreen();
+
+  } else if(screen==='leaderboard'){
+    drawLeaderboard();
   }
 
   if(screen==='pokédex'){
@@ -2174,73 +2758,70 @@ canvas.addEventListener('mousemove',e=>{
   if(screen==='playing'||screen==='intro') aimAt(e.clientX,e.clientY);
 });
 
-canvas.addEventListener('click',e=>{
-  const {clientX:cx,clientY:cy}=e;
-
+function handleTap(cx,cy){
   if(screen==='pokédex'){
-    // close button
     if(dexCloseArea&&cx>=dexCloseArea.x&&cy>=dexCloseArea.y&&cx<=dexCloseArea.x+dexCloseArea.w&&cy<=dexCloseArea.y+dexCloseArea.h){
-      screen='playing'; stageClearTimer=0; return;
+      screen=STAGES[stageIdx].type==='fishing'?'fishing':'playing'; return;
     }
-    // filter tabs
     for(const btn of dexFilterBtns){
-      if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
-        dexFilter=btn.filter; dexScroll=0; return;
-      }
+      if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){dexFilter=btn.filter;dexScroll=0;return;}
     }
     return;
   }
-
+  if(screen==='leaderboard'){
+    if(_lbBackBtn&&cx>=_lbBackBtn.x&&cy>=_lbBackBtn.y&&cx<=_lbBackBtn.x+_lbBackBtn.w&&cy<=_lbBackBtn.y+_lbBackBtn.h){
+      score=0;totalCatches=0;gotoStage(0);
+    }
+    return;
+  }
   if(screen==='stageClear'){
     const btn=ctx._stageClearBtn;
     if(btn&&stageClearTimer>60&&cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
       stageClearTimer=0;
       if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
       else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
-      return;
     }
     return;
   }
-
+  if(screen==='stageFail'){
+    if(_stageFailBtn&&stageFailTimer>50){
+      if(cx>=_stageFailBtn.retry.x&&cy>=_stageFailBtn.retry.y&&cx<=_stageFailBtn.retry.x+_stageFailBtn.retry.w&&cy<=_stageFailBtn.retry.y+_stageFailBtn.retry.h){
+        retryStage(); return;
+      }
+      if(cx>=_stageFailBtn.quit.x&&cy>=_stageFailBtn.quit.y&&cx<=_stageFailBtn.quit.x+_stageFailBtn.quit.w&&cy<=_stageFailBtn.quit.y+_stageFailBtn.quit.h){
+        score=0;totalCatches=0;gotoStage(0); return;
+      }
+    }
+    return;
+  }
   if(screen==='intro'){
-    if(introTimer>60){ screen='playing'; return; }
+    if(introTimer>60){
+      const isFish=STAGES[stageIdx].type==='fishing';
+      screen=isFish?'fishing':'playing'; return;
+    }
   }
+  if(screen==='playing'){ aimAt(cx,cy); fireNet(); }
+  if(screen==='fishing'){ fishingTap(); }
+}
 
-  if(screen==='playing'){
-    aimAt(cx,cy); fireNet();
-  }
+canvas.addEventListener('click',e=>{
+  handleTap(e.clientX,e.clientY);
 });
 
 canvas.addEventListener('touchstart',e=>{
   e.preventDefault();
   const t=e.touches[0];
   const cx=t.clientX, cy=t.clientY;
-
   if(screen==='pokédex'){
     if(dexCloseArea&&cx>=dexCloseArea.x&&cy>=dexCloseArea.y&&cx<=dexCloseArea.x+dexCloseArea.w&&cy<=dexCloseArea.y+dexCloseArea.h){
-      screen='playing'; return;
+      screen=STAGES[stageIdx].type==='fishing'?'fishing':'playing'; return;
     }
     for(const btn of dexFilterBtns){
-      if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
-        dexFilter=btn.filter; dexScroll=0; return;
-      }
+      if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){dexFilter=btn.filter;dexScroll=0;return;}
     }
-    _dexTouchY=cy;
-    return;
+    _dexTouchY=cy; return;
   }
-
-  if(screen==='stageClear'){
-    const btn=ctx._stageClearBtn;
-    if(btn&&stageClearTimer>60&&cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
-      stageClearTimer=0;
-      if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
-      else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
-    }
-    return;
-  }
-
-  if(screen==='intro'&&introTimer>60){ screen='playing'; return; }
-  if(screen==='playing'){ aimAt(cx,cy); fireNet(); }
+  handleTap(cx,cy);
 },{passive:false});
 
 canvas.addEventListener('touchmove',e=>{
@@ -2259,9 +2840,10 @@ canvas.addEventListener('wheel',e=>{
 },{passive:false});
 
 window.addEventListener('keydown',e=>{
-  if(e.code==='KeyP'||e.code==='Escape'){
+  if(e.code==='KeyP'){
     e.preventDefault();
-    screen=screen==='pokédex'?'playing':'pokédex';
+    if(screen==='pokédex'){screen=STAGES[stageIdx].type==='fishing'?'fishing':'playing';}
+    else{screen='pokédex';}
     if(screen==='pokédex') dexScroll=0;
   }
   if(screen==='playing'){
@@ -2269,7 +2851,11 @@ window.addEventListener('keydown',e=>{
     if(e.code==='ArrowLeft') cannon.angle=Math.max(-Math.PI+0.14,cannon.angle-0.07);
     if(e.code==='ArrowRight') cannon.angle=Math.min(-0.14,cannon.angle+0.07);
   }
-  if(screen==='intro'&&e.code==='Space'&&introTimer>60) screen='playing';
+  if(screen==='fishing'&&(e.code==='Space'||e.code==='Enter')){e.preventDefault();fishingTap();}
+  if(screen==='intro'&&e.code==='Space'&&introTimer>60){
+    const isFish=STAGES[stageIdx].type==='fishing';
+    screen=isFish?'fishing':'playing';
+  }
   if(screen==='stageClear'){
     const btn=ctx._stageClearBtn;
     if((e.code==='Space'||e.code==='Enter')&&btn&&stageClearTimer>60){
@@ -2278,17 +2864,45 @@ window.addEventListener('keydown',e=>{
       else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
     }
   }
+  if(screen==='stageFail'&&e.code==='Space') retryStage();
+  if(screen==='leaderboard'&&e.code==='Space'){score=0;totalCatches=0;gotoStage(0);}
 });
 
 document.getElementById('dex-btn').addEventListener('click',()=>{
-  screen=screen==='pokédex'?'playing':'pokédex';
+  if(screen==='pokédex'){screen=STAGES[stageIdx].type==='fishing'?'fishing':'playing';}
+  else{screen='pokédex';}
   if(screen==='pokédex') dexScroll=0;
+});
+
+document.getElementById('lb-btn').addEventListener('click',()=>{
+  lbFromScreen=screen;
+  screen='leaderboard';
+});
+
+// Name modal submit
+function submitName(name){
+  document.getElementById('name-modal').style.display='none';
+  saveToLeaderboard(name.trim(),score);
+  score=0; totalCatches=0;
+  screen='leaderboard';
+}
+document.getElementById('nm-submit').addEventListener('click',()=>{
+  submitName(document.getElementById('nm-input').value);
+});
+document.getElementById('nm-skip').addEventListener('click',()=>{
+  document.getElementById('name-modal').style.display='none';
+  score=0; totalCatches=0;
+  screen='leaderboard';
+});
+document.getElementById('nm-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter') submitName(document.getElementById('nm-input').value);
 });
 
 window.addEventListener('resize',()=>{
   W=canvas.width=window.innerWidth;
   H=canvas.height=window.innerHeight;
   cannon.x=W/2; cannon.y=H-58;
+  FISH.lineX=W/2;
   bubbles.forEach(b=>{if(b.x>W)b.x=Math.random()*W;});
   seaweeds.forEach(sw=>{if(sw.x>W)sw.x=Math.random()*W;});
   corals.forEach(co=>{if(co.x>W)co.x=Math.random()*W;});
@@ -2299,6 +2913,12 @@ window.addEventListener('resize',()=>{
    ═══════════════════════════════════════════════════════════════════════════ */
 loadCollection();
 loadHighScore();
+loadLeaderboard();
+FISH.lineX=W/2;
+// show leaderboard button after password unlock
+function unlockUI(){
+  document.getElementById('lb-btn').style.display='flex';
+}
 spawnCreature(); spawnCreature(); spawnCreature();
 loop();
 </script>
