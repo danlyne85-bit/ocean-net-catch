@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌊 Ocean Net Catch!</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#001a33; font-family:'Comic Sans MS','Chalkboard SE',cursive; user-select:none; }
+canvas { display:block; cursor:crosshair; }
+#dex-btn {
+  position:absolute; top:14px; left:14px;
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,#FF6B6B,#FF8E53);
+  border:3px solid #FFD700; cursor:pointer; font-size:26px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 18px rgba(255,107,107,.5);
+  transition:transform .15s; z-index:10;
+}
+#dex-btn:hover { transform:scale(1.12); }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="dex-btn" title="Ocean Dex (P)">📖</button>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════════════
+   OCEAN NET CATCH  —  Enhanced Edition
+   ── HOW TO CONFIGURE ─────────────────────────────────────────────────────
+   All tunable values live in the CFG object below.
+   Stage pools, speeds, and challenge targets are in the STAGES array.
+   Rarity spawn weights are in CFG.weights (higher = more common).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const CFG = {
+  netSpeed        : 13,    // pixels/frame the net travels
+  netMaxRadius    : 54,    // maximum net spread (px)
+  netLifetime     : 62,    // frames before net vanishes
+  spawnBase       : 88,    // frames between spawns at stage start
+  spawnMin        : 36,    // fastest spawn rate (later stages)
+  maxOnScreen     : 13,    // max concurrent live creatures
+  weights: {               // relative spawn chance per rarity
+    common    : 42,
+    uncommon  : 26,
+    rare      : 16,
+    epic      :  8,
+    legendary :  3,        // set 0 to prevent legendaries
+  },
+};
+
+/* ─── Canvas ─────────────────────────────────────────────────────────────── */
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+let W = canvas.width  = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CREATURE DRAW FUNCTIONS  —  all centered at (0,0), facing RIGHT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function drawClownfish(c) {
+  // tail
+  c.fillStyle='#E64A19';
+  c.beginPath();c.moveTo(22,0);c.lineTo(38,-17);c.lineTo(38,17);c.closePath();c.fill();
+  // body
+  c.fillStyle='#FF6D00';
+  c.beginPath();c.ellipse(-1,0,23,15,0,0,Math.PI*2);c.fill();
+  // white stripes
+  c.fillStyle='#FFF';
+  c.beginPath();c.ellipse(-10,0,4,14,0,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(5,0,3.5,13,0,0,Math.PI*2);c.fill();
+  c.strokeStyle='#222';c.lineWidth=1.2;
+  c.beginPath();c.ellipse(-10,0,4,14,0,0,Math.PI*2);c.stroke();
+  c.beginPath();c.ellipse(5,0,3.5,13,0,0,Math.PI*2);c.stroke();
+  // dorsal fin
+  c.fillStyle='#FF6D00';
+  c.beginPath();c.moveTo(-13,-13);c.lineTo(8,-13);c.lineTo(6,-7);c.lineTo(-11,-7);c.closePath();c.fill();
+  // pectoral fin
+  c.fillStyle='#FF8F00';
+  c.beginPath();c.ellipse(2,9,8,5,-0.4,0,Math.PI*2);c.fill();
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-16,-5,5.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#111';c.beginPath();c.arc(-15,-5,3,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-14,-6,1.3,0,Math.PI*2);c.fill();
+  // outline
+  c.strokeStyle='#BF360C';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(-1,0,23,15,0,0,Math.PI*2);c.stroke();
+}
+
+function drawPufferfish(c) {
+  // spines first (behind body)
+  c.strokeStyle='#558B2F';c.lineWidth=2;
+  for(let i=0;i<10;i++){
+    const a=(Math.PI*2/10)*i;
+    c.beginPath();c.moveTo(Math.cos(a)*18,Math.sin(a)*18);
+    c.lineTo(Math.cos(a)*28,Math.sin(a)*28);c.stroke();
+  }
+  // body
+  const bg=c.createRadialGradient(-4,-4,2,0,0,20);
+  bg.addColorStop(0,'#FFF9C4');bg.addColorStop(1,'#F9A825');
+  c.fillStyle=bg;
+  c.beginPath();c.arc(0,0,20,0,Math.PI*2);c.fill();
+  // spots
+  c.fillStyle='rgba(100,120,0,.25)';
+  [[5,5,5],[-7,2,4],[3,-8,4],[8,-3,3]].forEach(([x,y,r])=>{
+    c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+  });
+  // eyes (big cute)
+  c.fillStyle='#FFF';c.beginPath();c.arc(-10,-7,7,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(5,-10,6,0,Math.PI*2);c.fill();
+  c.fillStyle='#222';c.beginPath();c.arc(-9,-7,4,0,Math.PI*2);c.fill();
+  c.fillStyle='#222';c.beginPath();c.arc(6,-10,3.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-8,-8,1.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(7,-11,1.3,0,Math.PI*2);c.fill();
+  // mouth
+  c.strokeStyle='#E65100';c.lineWidth=2;
+  c.beginPath();c.arc(2,8,5,0.2,Math.PI-0.2);c.stroke();
+  c.strokeStyle='#333';c.lineWidth=1.5;
+  c.beginPath();c.arc(0,0,20,0,Math.PI*2);c.stroke();
+}
+
+function drawBlueTang(c) {
+  // tail (yellow)
+  c.fillStyle='#FDD835';
+  c.beginPath();c.moveTo(24,0);c.lineTo(40,-16);c.lineTo(40,16);c.closePath();c.fill();
+  c.fillStyle='#F9A825';
+  c.beginPath();c.moveTo(22,0);c.lineTo(36,-10);c.lineTo(36,10);c.closePath();c.fill();
+  // body
+  c.fillStyle='#1565C0';
+  c.beginPath();c.ellipse(0,0,25,17,0,0,Math.PI*2);c.fill();
+  // lighter blue accent
+  c.fillStyle='#42A5F5';
+  c.beginPath();c.ellipse(-2,-5,18,8,0.1,0,Math.PI*2);c.fill();
+  // dorsal fin
+  c.fillStyle='#0D47A1';
+  c.beginPath();c.moveTo(-8,-16);c.lineTo(10,-16);c.lineTo(8,-8);c.lineTo(-6,-8);c.closePath();c.fill();
+  // anal fin
+  c.fillStyle='#0D47A1';
+  c.beginPath();c.moveTo(-5,15);c.lineTo(8,15);c.lineTo(6,9);c.lineTo(-3,9);c.closePath();c.fill();
+  // lateral stripe
+  c.strokeStyle='#0D47A1';c.lineWidth=2.5;
+  c.beginPath();c.moveTo(-22,0);c.lineTo(22,0);c.stroke();
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-16,-5,6,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A237E';c.beginPath();c.arc(-15,-5,3.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-14,-6,1.4,0,Math.PI*2);c.fill();
+  // tail spine (signature feature)
+  c.strokeStyle='#FFF';c.lineWidth=2;
+  c.beginPath();c.moveTo(22,-5);c.lineTo(28,-10);c.stroke();
+}
+
+function drawAngelfish(c) {
+  // trailing fins (long streamers)
+  c.fillStyle='rgba(176,190,197,.7)';
+  c.beginPath();c.moveTo(10,-8);c.lineTo(22,-35);c.lineTo(5,-8);c.closePath();c.fill();
+  c.beginPath();c.moveTo(10,8);c.lineTo(22,35);c.lineTo(5,8);c.closePath();c.fill();
+  // tail fin
+  c.fillStyle='#90A4AE';
+  c.beginPath();c.moveTo(16,0);c.lineTo(28,-12);c.lineTo(28,12);c.closePath();c.fill();
+  // body (tall diamond shape)
+  c.fillStyle='#CFD8DC';
+  c.beginPath();
+  c.moveTo(-20,0);c.lineTo(0,-22);c.lineTo(16,0);c.lineTo(0,22);c.closePath();c.fill();
+  // black vertical stripes
+  c.fillStyle='#212121';
+  c.beginPath();c.moveTo(-8,-19);c.lineTo(-2,-20);c.lineTo(-2,20);c.lineTo(-8,19);c.closePath();c.fill();
+  c.beginPath();c.moveTo(4,-15);c.lineTo(9,-13);c.lineTo(9,13);c.lineTo(4,15);c.closePath();c.fill();
+  // head/face stripe (through eye)
+  c.beginPath();c.moveTo(-20,0);c.lineTo(-14,-8);c.lineTo(-10,-6);c.lineTo(-10,6);c.lineTo(-14,8);c.closePath();c.fill();
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-15,-3,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFD600';c.beginPath();c.arc(-14,-3,3.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#111';c.beginPath();c.arc(-14,-3,2,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-13,-4,1,0,Math.PI*2);c.fill();
+  // outline
+  c.strokeStyle='#546E7A';c.lineWidth=1.2;
+  c.beginPath();c.moveTo(-20,0);c.lineTo(0,-22);c.lineTo(16,0);c.lineTo(0,22);c.closePath();c.stroke();
+}
+
+function drawStarfish(c) {
+  // 5 arms
+  const arms=5;
+  c.fillStyle='#FF5722';
+  c.beginPath();
+  for(let i=0;i<arms;i++){
+    const a=(Math.PI*2/arms)*i - Math.PI/2;
+    const ai=a+Math.PI/arms;
+    c.lineTo(Math.cos(a)*26,Math.sin(a)*26);
+    c.lineTo(Math.cos(ai)*10,Math.sin(ai)*10);
+  }
+  c.closePath();c.fill();
+  // texture dots
+  c.fillStyle='#FF8A65';
+  for(let i=0;i<arms;i++){
+    const a=(Math.PI*2/arms)*i - Math.PI/2;
+    for(let r=6;r<=22;r+=7){
+      c.beginPath();c.arc(Math.cos(a)*r,Math.sin(a)*r,2.5,0,Math.PI*2);c.fill();
+    }
+  }
+  // center circle
+  c.fillStyle='#FF7043';
+  c.beginPath();c.arc(0,0,8,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFAB91';
+  c.beginPath();c.arc(0,0,4,0,Math.PI*2);c.fill();
+  // outline
+  c.strokeStyle='#BF360C';c.lineWidth=1.5;
+  c.beginPath();
+  for(let i=0;i<arms;i++){
+    const a=(Math.PI*2/arms)*i - Math.PI/2;
+    const ai=a+Math.PI/arms;
+    c.lineTo(Math.cos(a)*26,Math.sin(a)*26);
+    c.lineTo(Math.cos(ai)*10,Math.sin(ai)*10);
+  }
+  c.closePath();c.stroke();
+}
+
+function drawCrab(c) {
+  // walking legs (behind body)
+  c.strokeStyle='#B71C1C';c.lineWidth=3;c.lineCap='round';
+  [[-8,12],[-2,14],[4,14],[10,12]].forEach(([lx,ly])=>{
+    c.beginPath();c.moveTo(lx,8);c.lineTo(lx+3,ly+10);c.stroke();
+    c.beginPath();c.moveTo(lx,8);c.lineTo(lx-3,ly+10);c.stroke();
+  });
+  // shell/body
+  const bg=c.createRadialGradient(-3,-3,2,0,0,20);
+  bg.addColorStop(0,'#EF5350');bg.addColorStop(1,'#C62828');
+  c.fillStyle=bg;
+  c.beginPath();c.ellipse(0,3,22,17,0,0,Math.PI*2);c.fill();
+  // shell pattern lines
+  c.strokeStyle='rgba(255,255,255,.2)';c.lineWidth=1.5;
+  for(let i=0;i<4;i++){
+    c.beginPath();c.arc(0,3,7+i*4,-Math.PI*0.6,Math.PI*0.6);c.stroke();
+  }
+  // big left claw
+  c.fillStyle='#D32F2F';
+  c.beginPath();c.ellipse(-28,0,14,9,0.3,0,Math.PI*2);c.fill();
+  c.beginPath();c.moveTo(-20,-3);c.lineTo(-15,2);c.lineTo(-20,5);c.closePath();c.fill();
+  c.strokeStyle='#B71C1C';c.lineWidth=2;
+  c.beginPath();c.ellipse(-28,0,14,9,0.3,0,Math.PI*2);c.stroke();
+  // arm to left claw
+  c.strokeStyle='#C62828';c.lineWidth=6;c.lineCap='round';
+  c.beginPath();c.moveTo(-20,0);c.lineTo(-14,2);c.stroke();
+  // big right claw
+  c.fillStyle='#D32F2F';
+  c.beginPath();c.ellipse(28,0,14,9,-0.3,0,Math.PI*2);c.fill();
+  c.beginPath();c.moveTo(20,-3);c.lineTo(15,2);c.lineTo(20,5);c.closePath();c.fill();
+  c.strokeStyle='#B71C1C';c.lineWidth=2;
+  c.beginPath();c.ellipse(28,0,14,9,-0.3,0,Math.PI*2);c.stroke();
+  // arm to right claw
+  c.strokeStyle='#C62828';c.lineWidth=6;c.lineCap='round';
+  c.beginPath();c.moveTo(20,0);c.lineTo(14,2);c.stroke();
+  // eye stalks
+  c.strokeStyle='#B71C1C';c.lineWidth=3;
+  c.beginPath();c.moveTo(-8,-15);c.lineTo(-10,-25);c.stroke();
+  c.beginPath();c.moveTo(8,-15);c.lineTo(10,-25);c.stroke();
+  c.fillStyle='#111';c.beginPath();c.arc(-10,-26,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#111';c.beginPath();c.arc(10,-26,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-9,-27,2,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(11,-27,2,0,Math.PI*2);c.fill();
+  // outline
+  c.strokeStyle='#7F0000';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(0,3,22,17,0,0,Math.PI*2);c.stroke();
+}
+
+function drawShark(c) {
+  // tail (crescent)
+  c.fillStyle='#546E7A';
+  c.beginPath();c.moveTo(30,0);c.lineTo(48,-18);c.lineTo(40,0);c.lineTo(48,12);c.closePath();c.fill();
+  // body
+  c.fillStyle='#607D8B';
+  c.beginPath();c.ellipse(0,0,34,13,0,0,Math.PI*2);c.fill();
+  // white belly
+  c.fillStyle='#ECEFF1';
+  c.beginPath();c.ellipse(0,7,27,7,0,0,Math.PI*2);c.fill();
+  // dorsal fin
+  c.fillStyle='#546E7A';
+  c.beginPath();c.moveTo(2,-12);c.lineTo(12,-30);c.lineTo(18,-12);c.closePath();c.fill();
+  // pectoral fin
+  c.fillStyle='#455A64';
+  c.beginPath();c.moveTo(-4,6);c.lineTo(-16,24);c.lineTo(10,12);c.closePath();c.fill();
+  // gill slits
+  c.strokeStyle='#37474F';c.lineWidth=1.5;
+  for(let i=0;i<3;i++){
+    c.beginPath();c.arc(-10+i*6,-1,8,-0.6,0.6);c.stroke();
+  }
+  // eye
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-23,-4,4.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-22,-5,1.5,0,Math.PI*2);c.fill();
+  // teeth (bottom row)
+  c.fillStyle='#FFF';
+  for(let i=0;i<5;i++){
+    c.beginPath();c.moveTo(-20+i*5,8);c.lineTo(-17+i*5,15);c.lineTo(-14+i*5,8);c.closePath();c.fill();
+  }
+  // snout outline
+  c.strokeStyle='#37474F';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(0,0,34,13,0,0,Math.PI*2);c.stroke();
+}
+
+function drawSeahorse(c) {
+  // drawn taller; use scale 0.8 externally
+  // tail curl
+  c.strokeStyle='#F57F17';c.lineWidth=8;c.lineCap='round';
+  c.beginPath();
+  c.moveTo(4,18);c.quadraticCurveTo(20,28,18,38);
+  c.quadraticCurveTo(16,46,8,44);c.stroke();
+  // body segments
+  const segColors=['#F9A825','#FFB300','#FFA000','#FF8F00','#FF6F00'];
+  for(let i=0;i<5;i++){
+    c.fillStyle=segColors[i];
+    c.beginPath();c.ellipse(0,i*8-4,10-i,5,0,0,Math.PI*2);c.fill();
+    c.strokeStyle='#E65100';c.lineWidth=1;
+    c.beginPath();c.ellipse(0,i*8-4,10-i,5,0,0,Math.PI*2);c.stroke();
+  }
+  // neck
+  c.fillStyle='#FFB300';
+  c.beginPath();c.ellipse(-3,-20,7,14,0.15,0,Math.PI*2);c.fill();
+  // head
+  c.fillStyle='#F9A825';
+  c.beginPath();c.ellipse(-6,-32,10,8,0.3,0,Math.PI*2);c.fill();
+  // snout
+  c.fillStyle='#FFB300';
+  c.beginPath();c.ellipse(-14,-35,8,4,0.2,0,Math.PI*2);c.fill();
+  // coronet (crown)
+  c.fillStyle='#FF6F00';
+  for(let i=0;i<5;i++){
+    const a=(Math.PI*2/5)*i - Math.PI*0.7;
+    c.beginPath();c.moveTo(-6,-38);
+    c.lineTo(-6+Math.cos(a)*8,-38+Math.sin(a)*8);c.lineTo(-6+Math.cos(a+0.3)*6,-38+Math.sin(a+0.3)*6);
+    c.closePath();c.fill();
+  }
+  // dorsal fin (fan)
+  c.fillStyle='rgba(255,213,79,.7)';
+  c.beginPath();c.moveTo(10,-10);
+  for(let i=0;i<6;i++){
+    const a=-0.8+i*0.25;
+    c.lineTo(10+Math.cos(a)*18,- 10+Math.sin(a)*8);
+  }
+  c.closePath();c.fill();
+  c.strokeStyle='#F9A825';c.lineWidth=1;
+  c.beginPath();c.moveTo(10,-10);
+  for(let i=0;i<6;i++){
+    const a=-0.8+i*0.25;
+    c.lineTo(10+Math.cos(a)*18,-10+Math.sin(a)*8);
+  }
+  c.closePath();c.stroke();
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-9,-33,4,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-9,-33,2.2,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-8,-34,1,0,Math.PI*2);c.fill();
+}
+
+function drawSeaTurtle(c) {
+  // flippers
+  c.fillStyle='#2E7D32';
+  c.beginPath();c.ellipse(-18,-12,14,7,-0.6,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(-18,12,14,7,0.6,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(18,-10,12,6,-0.4,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(18,10,12,6,0.4,0,Math.PI*2);c.fill();
+  // shell
+  const sg=c.createRadialGradient(-3,-3,3,0,0,24);
+  sg.addColorStop(0,'#66BB6A');sg.addColorStop(1,'#2E7D32');
+  c.fillStyle=sg;
+  c.beginPath();c.ellipse(0,0,24,20,0,0,Math.PI*2);c.fill();
+  // shell hexagon pattern
+  c.strokeStyle='#1B5E20';c.lineWidth=1.5;
+  [[0,0,8],[0,-10,6],[10,-5,6],[10,5,6],[0,10,6],[-10,5,6],[-10,-5,6]].forEach(([x,y,r])=>{
+    c.beginPath();
+    for(let i=0;i<6;i++){
+      const a=(Math.PI/3)*i;
+      i===0?c.moveTo(x+Math.cos(a)*r,y+Math.sin(a)*r):c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);
+    }
+    c.closePath();c.stroke();
+  });
+  // head
+  c.fillStyle='#558B2F';
+  c.beginPath();c.ellipse(-28,0,10,8,0,0,Math.PI*2);c.fill();
+  // smile
+  c.strokeStyle='#1B5E20';c.lineWidth=2;
+  c.beginPath();c.arc(-30,3,4,0,Math.PI);c.stroke();
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-26,-3,4,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-25,-3,2.2,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-24,-4,1,0,Math.PI*2);c.fill();
+}
+
+function drawJellyfish(c) {
+  // NOTE: this creature is taller than wide (dome top, tentacles bottom)
+  // tentacles
+  const tColors=['#CE93D8','#BA68C8','#AB47BC','#9C27B0','#BA68C8','#E040FB'];
+  [-18,-11,-4,4,11,18].forEach((tx,i)=>{
+    c.strokeStyle=tColors[i];c.lineWidth=2.5;
+    c.beginPath();c.moveTo(tx,10);
+    for(let ty=10;ty<=40;ty+=5){
+      c.lineTo(tx+Math.sin(ty*0.35+i*1.2)*6,ty);
+    }
+    c.stroke();
+    // glow tip
+    c.fillStyle=tColors[i];
+    c.beginPath();c.arc(tx+Math.sin(40*0.35+i*1.2)*6,40,3,0,Math.PI*2);c.fill();
+  });
+  // dome glow
+  c.save();
+  c.shadowColor='#E040FB';c.shadowBlur=18;
+  const dg=c.createRadialGradient(-4,-16,2,0,-10,22);
+  dg.addColorStop(0,'#F3E5F5');dg.addColorStop(0.5,'#CE93D8');dg.addColorStop(1,'#7B1FA2');
+  c.fillStyle=dg;
+  c.beginPath();c.arc(0,-10,22,Math.PI,0,false);
+  c.quadraticCurveTo(14,8,-2,10);c.quadraticCurveTo(-18,8,-22,0);c.closePath();c.fill();
+  c.restore();
+  // inner dome rings
+  c.strokeStyle='rgba(255,255,255,.3)';c.lineWidth=1;
+  c.beginPath();c.arc(0,-10,14,Math.PI+0.3,Math.PI*2-0.3);c.stroke();
+  c.beginPath();c.arc(0,-10,7,Math.PI+0.4,Math.PI*2-0.4);c.stroke();
+  // spots
+  c.fillStyle='rgba(243,229,245,.5)';
+  [[-6,-14,4],[6,-18,3],[0,-8,3.5]].forEach(([x,y,r])=>{
+    c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+  });
+  // eyes
+  c.fillStyle='#4A0072';
+  c.beginPath();c.arc(-7,-12,3,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(7,-12,3,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';
+  c.beginPath();c.arc(-6,-13,1.2,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(8,-13,1.2,0,Math.PI*2);c.fill();
+}
+
+function drawOctopus(c) {
+  // 8 tentacles
+  const tentacleColors=['#E53935','#EF5350','#C62828','#D32F2F','#E53935','#EF5350','#C62828','#D32F2F'];
+  for(let i=0;i<8;i++){
+    const startA=(Math.PI*2/8)*i;
+    const ex=Math.cos(startA)*38;
+    const ey=Math.sin(startA)*38;
+    c.strokeStyle=tentacleColors[i];c.lineWidth=7-i%2;c.lineCap='round';
+    c.beginPath();
+    c.moveTo(Math.cos(startA)*15,Math.sin(startA)*15);
+    c.quadraticCurveTo(Math.cos(startA)*26+Math.cos(startA+0.8)*12, Math.sin(startA)*26+Math.sin(startA+0.8)*12,ex,ey);
+    c.stroke();
+    // suckers
+    c.fillStyle='#FFCDD2';
+    for(let d=0.35;d<=0.9;d+=0.25){
+      const sx=Math.cos(startA)*15*(1-d)+ex*d;
+      const sy=Math.sin(startA)*15*(1-d)+ey*d;
+      c.beginPath();c.arc(sx+Math.cos(startA+Math.PI/2)*3,sy+Math.sin(startA+Math.PI/2)*3,2.5,0,Math.PI*2);c.fill();
+    }
+  }
+  // body (mantle)
+  const og=c.createRadialGradient(-3,-5,3,0,0,20);
+  og.addColorStop(0,'#EF9A9A');og.addColorStop(1,'#C62828');
+  c.fillStyle=og;
+  c.beginPath();c.ellipse(0,-5,20,22,0,0,Math.PI*2);c.fill();
+  c.strokeStyle='#B71C1C';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(0,-5,20,22,0,0,Math.PI*2);c.stroke();
+  // eyes
+  c.fillStyle='#FFF';c.beginPath();c.arc(-8,-8,7,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(8,-8,7,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-7,-8,4.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(9,-8,4.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-6,-9,1.8,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(10,-9,1.8,0,Math.PI*2);c.fill();
+  // blush
+  c.fillStyle='rgba(255,200,200,.4)';
+  c.beginPath();c.ellipse(-10,-2,6,3,0,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(10,-2,6,3,0,0,Math.PI*2);c.fill();
+}
+
+function drawLobster(c) {
+  // tail fan
+  c.fillStyle='#C62828';
+  for(let i=-2;i<=2;i++){
+    c.beginPath();c.ellipse(28+i*4,i*5,10,5,(i*0.2),0,Math.PI*2);c.fill();
+  }
+  // abdomen segments
+  const abColors=['#D32F2F','#C62828','#B71C1C','#C62828','#D32F2F'];
+  for(let i=0;i<5;i++){
+    c.fillStyle=abColors[i];
+    c.beginPath();c.ellipse(10-i*8,0,8,10,0,0,Math.PI*2);c.fill();
+    c.strokeStyle='#7F0000';c.lineWidth=1;
+    c.beginPath();c.ellipse(10-i*8,0,8,10,0,0,Math.PI*2);c.stroke();
+  }
+  // cephalothorax (main body)
+  const lg=c.createRadialGradient(-5,-3,3,-3,0,22);
+  lg.addColorStop(0,'#EF5350');lg.addColorStop(1,'#B71C1C');
+  c.fillStyle=lg;
+  c.beginPath();c.ellipse(-10,0,22,16,0,0,Math.PI*2);c.fill();
+  // walking legs
+  c.strokeStyle='#C62828';c.lineWidth=2.5;c.lineCap='round';
+  [[-14,12],[-8,14],[-2,14],[4,12]].forEach(([lx,ly],i)=>{
+    c.beginPath();c.moveTo(lx,8);c.lineTo(lx+2,ly+10);c.stroke();
+    c.beginPath();c.moveTo(lx,8);c.lineTo(lx-2,ly+8);c.stroke();
+  });
+  // big claws
+  c.fillStyle='#D32F2F';
+  c.beginPath();c.ellipse(-36,-5,14,9,-0.2,0,Math.PI*2);c.fill();
+  c.strokeStyle='#7F0000';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(-36,-5,14,9,-0.2,0,Math.PI*2);c.stroke();
+  c.fillStyle='#C62828';c.beginPath();c.moveTo(-28,-2);c.lineTo(-24,3);c.lineTo(-28,6);c.closePath();c.fill();
+  c.beginPath();c.ellipse(-36,6,12,8,0.3,0,Math.PI*2);c.fill();
+  c.strokeStyle='#7F0000';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(-36,6,12,8,0.3,0,Math.PI*2);c.stroke();
+  // antennae
+  c.strokeStyle='#B71C1C';c.lineWidth=2;
+  c.beginPath();c.moveTo(-28,-12);c.lineTo(-50,-30);c.stroke();
+  c.beginPath();c.moveTo(-24,-12);c.lineTo(-44,-32);c.stroke();
+  // eye
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-24,-8,4,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-23,-9,1.5,0,Math.PI*2);c.fill();
+  c.strokeStyle='#7F0000';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(-10,0,22,16,0,0,Math.PI*2);c.stroke();
+}
+
+function drawBlueWhale(c) {
+  // pectoral fin
+  c.fillStyle='#0D47A1';
+  c.beginPath();c.moveTo(-14,10);c.lineTo(-28,35);c.lineTo(4,18);c.closePath();c.fill();
+  // tail fluke
+  c.fillStyle='#0D47A1';
+  c.beginPath();c.moveTo(46,0);c.lineTo(68,-20);c.lineTo(62,0);c.lineTo(68,20);c.closePath();c.fill();
+  // body
+  const wg=c.createLinearGradient(0,-22,0,22);
+  wg.addColorStop(0,'#1565C0');wg.addColorStop(0.6,'#1976D2');wg.addColorStop(1,'#E3F2FD');
+  c.fillStyle=wg;
+  c.beginPath();
+  c.moveTo(-55,0);
+  c.bezierCurveTo(-55,-20,46,-22,55,-3);
+  c.bezierCurveTo(60,0,55,5,46,5);
+  c.bezierCurveTo(46,20,-55,22,-55,0);
+  c.fill();
+  // throat pleats
+  c.strokeStyle='rgba(227,242,253,.5)';c.lineWidth=2;
+  for(let i=0;i<7;i++){
+    c.beginPath();c.moveTo(-40+i*10,-2);c.lineTo(-38+i*10,14);c.stroke();
+  }
+  // dorsal fin
+  c.fillStyle='#1565C0';
+  c.beginPath();c.moveTo(14,-18);c.lineTo(24,-36);c.lineTo(30,-18);c.closePath();c.fill();
+  // eye
+  c.fillStyle='#0D47A1';c.beginPath();c.arc(-38,-6,6,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-37,-7,2.5,0,Math.PI*2);c.fill();
+  // mouth line
+  c.strokeStyle='#0D47A1';c.lineWidth=2.5;
+  c.beginPath();c.moveTo(-55,0);c.lineTo(-30,4);c.stroke();
+  // blowhole
+  c.strokeStyle='#90CAF9';c.lineWidth=2;
+  c.beginPath();c.arc(-20,-20,5,Math.PI,0);c.stroke();
+  // outline
+  c.strokeStyle='#0D47A1';c.lineWidth=2;
+  c.beginPath();
+  c.moveTo(-55,0);
+  c.bezierCurveTo(-55,-20,46,-22,55,-3);
+  c.bezierCurveTo(60,0,55,5,46,5);
+  c.bezierCurveTo(46,20,-55,22,-55,0);
+  c.stroke();
+}
+
+function drawDragonfish(c) {
+  c.save();
+  // dorsal spines (behind body)
+  c.strokeStyle='#00E5FF';c.lineWidth=2;
+  for(let i=0;i<6;i++){
+    c.beginPath();c.moveTo(-25+i*9,-10);c.lineTo(-24+i*9,-24);c.stroke();
+    c.fillStyle='#69FF47';
+    c.beginPath();c.arc(-24+i*9,-24,2.5,0,Math.PI*2);c.fill();
+  }
+  // ventral tendrils with glowing tips
+  c.strokeStyle='#64FFDA';c.lineWidth=1.8;
+  for(let i=0;i<5;i++){
+    c.beginPath();c.moveTo(-20+i*8,10);
+    c.quadraticCurveTo(-20+i*8+5,22,-20+i*8+3,30);c.stroke();
+    c.fillStyle='#B9F6CA';
+    c.beginPath();c.arc(-20+i*8+3,30,3,0,Math.PI*2);c.fill();
+  }
+  // tail
+  c.fillStyle='#004D40';
+  c.beginPath();c.moveTo(36,0);c.lineTo(58,-14);c.lineTo(50,0);c.lineTo(58,14);c.closePath();c.fill();
+  // body with bioluminescent glow
+  c.shadowColor='#00E5FF';c.shadowBlur=12;
+  const dg=c.createLinearGradient(0,-12,0,12);
+  dg.addColorStop(0,'#00695C');dg.addColorStop(1,'#004D40');
+  c.fillStyle=dg;
+  c.beginPath();c.ellipse(5,0,38,11,0,0,Math.PI*2);c.fill();
+  // bioluminescent stripe
+  c.strokeStyle='#64FFDA';c.lineWidth=2;c.shadowBlur=8;
+  c.beginPath();c.moveTo(-30,2);c.lineTo(32,2);c.stroke();
+  // glowing spots
+  c.shadowColor='#B9F6CA';c.shadowBlur=10;
+  c.fillStyle='#CCFF90';
+  [[-20,5],[-10,5],[0,5],[10,5],[20,5]].forEach(([x,y])=>{
+    c.beginPath();c.arc(x,y,3,0,Math.PI*2);c.fill();
+  });
+  c.shadowBlur=0;
+  // head
+  c.fillStyle='#00695C';
+  c.beginPath();c.arc(-34,0,13,0,Math.PI*2);c.fill();
+  // angler lure
+  c.strokeStyle='#CCFF90';c.lineWidth=2;c.shadowColor='#CCFF90';c.shadowBlur=20;
+  c.beginPath();c.moveTo(-40,-12);c.quadraticCurveTo(-58,-36,-52,-46);c.stroke();
+  c.fillStyle='#F4FF81';
+  c.beginPath();c.arc(-52,-46,7,0,Math.PI*2);c.fill();
+  c.shadowBlur=0;
+  // fang teeth
+  c.fillStyle='#FFF';
+  for(let i=0;i<4;i++){
+    c.beginPath();c.moveTo(-44+i*5,4);c.lineTo(-41+i*5,13);c.lineTo(-38+i*5,4);c.closePath();c.fill();
+  }
+  // eye (glowing)
+  c.shadowColor='#00E5FF';c.shadowBlur=14;
+  c.fillStyle='#00E5FF';c.beginPath();c.arc(-36,-5,5.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-36,-5,2.8,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-35,-6,1.2,0,Math.PI*2);c.fill();
+  c.restore();
+}
+
+function drawMantaRay(c) {
+  // whip tail
+  c.strokeStyle='#37474F';c.lineWidth=3;c.lineCap='round';
+  c.beginPath();c.moveTo(18,3);c.quadraticCurveTo(42,9,56,1);c.stroke();
+  // broad diamond body (wings up/down)
+  const mg=c.createLinearGradient(0,-34,0,34);
+  mg.addColorStop(0,'#263238');mg.addColorStop(0.5,'#455A64');mg.addColorStop(1,'#CFD8DC');
+  c.fillStyle=mg;
+  c.beginPath();
+  c.moveTo(-22,0);
+  c.quadraticCurveTo(-4,-20,18,-36);
+  c.quadraticCurveTo(28,-14,18,0);
+  c.quadraticCurveTo(28,14,18,36);
+  c.quadraticCurveTo(-4,20,-22,0);
+  c.closePath();c.fill();
+  // cephalic fins (horns)
+  c.fillStyle='#263238';
+  c.beginPath();c.moveTo(-22,0);c.lineTo(-36,-12);c.lineTo(-24,-6);c.closePath();c.fill();
+  c.beginPath();c.moveTo(-22,0);c.lineTo(-36,12);c.lineTo(-24,6);c.closePath();c.fill();
+  // belly shimmer
+  c.fillStyle='rgba(220,235,245,.28)';
+  c.beginPath();c.ellipse(-4,2,12,8,0,0,Math.PI*2);c.fill();
+  // eye
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-18,-4,3.5,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-17,-5,1.2,0,Math.PI*2);c.fill();
+  // outline
+  c.strokeStyle='#1C313A';c.lineWidth=1.5;
+  c.beginPath();
+  c.moveTo(-22,0);c.quadraticCurveTo(-4,-20,18,-36);c.quadraticCurveTo(28,-14,18,0);
+  c.quadraticCurveTo(28,14,18,36);c.quadraticCurveTo(-4,20,-22,0);
+  c.closePath();c.stroke();
+}
+
+function drawDolphin(c) {
+  // tail fluke
+  c.fillStyle='#1565C0';
+  c.beginPath();c.moveTo(28,0);c.lineTo(44,-14);c.lineTo(38,0);c.lineTo(44,14);c.closePath();c.fill();
+  // streamlined body
+  const dg=c.createLinearGradient(0,-13,0,13);
+  dg.addColorStop(0,'#1976D2');dg.addColorStop(0.65,'#42A5F5');dg.addColorStop(1,'#E3F2FD');
+  c.fillStyle=dg;
+  c.beginPath();
+  c.moveTo(-20,0);
+  c.bezierCurveTo(-14,-13,18,-13,28,0);
+  c.bezierCurveTo(18,9,-14,10,-20,0);
+  c.closePath();c.fill();
+  // white belly
+  c.fillStyle='rgba(227,242,253,.75)';
+  c.beginPath();c.ellipse(2,6,16,5,0,0,Math.PI*2);c.fill();
+  // dorsal fin
+  c.fillStyle='#1565C0';
+  c.beginPath();c.moveTo(4,-12);c.lineTo(10,-26);c.lineTo(18,-12);c.closePath();c.fill();
+  // pectoral fin
+  c.fillStyle='#1976D2';
+  c.beginPath();c.moveTo(-4,5);c.lineTo(-14,20);c.lineTo(8,10);c.closePath();c.fill();
+  // beak / melon
+  c.fillStyle='#42A5F5';
+  c.beginPath();c.ellipse(-17,-4,7,5,0.15,0,Math.PI*2);c.fill();
+  // eye
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-17,-4,4,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-16,-5,1.5,0,Math.PI*2);c.fill();
+  // smile
+  c.strokeStyle='#0D47A1';c.lineWidth=1.5;
+  c.beginPath();c.arc(-21,1,4,0,Math.PI*0.8);c.stroke();
+  // outline
+  c.strokeStyle='#0D47A1';c.lineWidth=1.5;
+  c.beginPath();
+  c.moveTo(-20,0);c.bezierCurveTo(-14,-13,18,-13,28,0);
+  c.bezierCurveTo(18,9,-14,10,-20,0);c.closePath();c.stroke();
+}
+
+function drawNarwhal(c) {
+  // spiral tusk
+  c.strokeStyle='#FFFDE7';c.lineWidth=4;c.lineCap='round';
+  c.beginPath();c.moveTo(-16,-2);c.lineTo(-52,-7);c.stroke();
+  c.strokeStyle='#90A4AE';c.lineWidth=1.5;
+  for(let i=0;i<6;i++){
+    const tx=-20-i*5,ty=-4-i*.4;
+    c.beginPath();c.moveTo(tx,ty-4);c.lineTo(tx-2,ty+1);c.stroke();
+  }
+  // tusk glow
+  c.save();c.shadowColor='rgba(255,253,200,.9)';c.shadowBlur=10;
+  c.strokeStyle='rgba(255,250,200,.5)';c.lineWidth=2;
+  c.beginPath();c.moveTo(-16,-2);c.lineTo(-52,-7);c.stroke();
+  c.restore();
+  // tail fluke
+  c.fillStyle='#546E7A';
+  c.beginPath();c.moveTo(28,0);c.lineTo(44,-14);c.lineTo(37,0);c.lineTo(44,14);c.closePath();c.fill();
+  // plump body
+  const ng=c.createRadialGradient(-4,-5,3,2,0,22);
+  ng.addColorStop(0,'#90A4AE');ng.addColorStop(1,'#546E7A');
+  c.fillStyle=ng;
+  c.beginPath();c.ellipse(4,0,24,17,0,0,Math.PI*2);c.fill();
+  // spots
+  c.fillStyle='rgba(38,50,56,.2)';
+  [[-6,-6,5],[4,-8,4],[13,3,5],[2,8,4],[-10,6,3]].forEach(([x,y,r])=>{
+    c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+  });
+  // belly
+  c.fillStyle='rgba(240,248,255,.5)';
+  c.beginPath();c.ellipse(4,10,18,7,0,0,Math.PI*2);c.fill();
+  // dorsal ridge
+  c.fillStyle='#546E7A';
+  c.beginPath();c.moveTo(2,-16);c.lineTo(9,-24);c.lineTo(15,-16);c.closePath();c.fill();
+  // eye
+  c.fillStyle='#FFF';c.beginPath();c.arc(-12,-5,5,0,Math.PI*2);c.fill();
+  c.fillStyle='#1A1A1A';c.beginPath();c.arc(-11,-5,3,0,Math.PI*2);c.fill();
+  c.fillStyle='#FFF';c.beginPath();c.arc(-10,-6,1.2,0,Math.PI*2);c.fill();
+  // outline
+  c.strokeStyle='#37474F';c.lineWidth=1.5;
+  c.beginPath();c.ellipse(4,0,24,17,0,0,Math.PI*2);c.stroke();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CREATURE REGISTRY
+   ═══════════════════════════════════════════════════════════════════════════ */
+const CREATURES = [
+  { id:'clownfish',  name:'Clownfish',  rarity:'common',    pts:10,  baseSpeed:2.6, scale:1.0,  noFlip:false, draw:drawClownfish,  desc:'A cheerful orange fish!',         stageUnlock:1 },
+  { id:'pufferfish', name:'Pufferfish', rarity:'common',    pts:15,  baseSpeed:1.5, scale:0.95, noFlip:false, draw:drawPufferfish, desc:'Round and full of surprises!',     stageUnlock:1 },
+  { id:'blueTang',   name:'Blue Tang',  rarity:'common',    pts:10,  baseSpeed:2.9, scale:1.0,  noFlip:false, draw:drawBlueTang,   desc:'Fast and brilliantly blue!',       stageUnlock:1 },
+  { id:'angelfish',  name:'Angelfish',  rarity:'uncommon',  pts:20,  baseSpeed:2.1, scale:0.9,  noFlip:false, draw:drawAngelfish,  desc:'Elegant with flowing fins!',       stageUnlock:2 },
+  { id:'starfish',   name:'Starfish',   rarity:'uncommon',  pts:25,  baseSpeed:0.8, scale:0.9,  noFlip:true,  draw:drawStarfish,   desc:'Slow but worth the wait!',         stageUnlock:2 },
+  { id:'crab',       name:'Crab',       rarity:'uncommon',  pts:20,  baseSpeed:1.4, scale:0.85, noFlip:false, draw:drawCrab,       desc:'Snappy claws, watch out!',         stageUnlock:2 },
+  { id:'shark',      name:'Shark',      rarity:'rare',      pts:30,  baseSpeed:4.2, scale:1.1,  noFlip:false, draw:drawShark,      desc:'Fast and fierce predator!',        stageUnlock:3 },
+  { id:'seahorse',   name:'Seahorse',   rarity:'rare',      pts:35,  baseSpeed:0.9, scale:0.75, noFlip:false, draw:drawSeahorse,   desc:'Magical underwater dancer!',       stageUnlock:3 },
+  { id:'seaTurtle',  name:'Sea Turtle', rarity:'rare',      pts:35,  baseSpeed:1.1, scale:1.0,  noFlip:false, draw:drawSeaTurtle,  desc:'Ancient wisdom of the sea!',       stageUnlock:3 },
+  { id:'jellyfish',  name:'Jellyfish',  rarity:'epic',      pts:50,  baseSpeed:0.7, scale:0.75, noFlip:true,  draw:drawJellyfish,  desc:'Glowing mystery of the deep!',     stageUnlock:4 },
+  { id:'octopus',    name:'Octopus',    rarity:'epic',      pts:50,  baseSpeed:1.3, scale:0.85, noFlip:false, draw:drawOctopus,    desc:'Eight arms, endless charm!',       stageUnlock:4 },
+  { id:'lobster',    name:'Lobster',    rarity:'epic',      pts:45,  baseSpeed:1.6, scale:0.85, noFlip:false, draw:drawLobster,    desc:'The clawed ruler of the reef!',    stageUnlock:4 },
+  { id:'blueWhale',  name:'Blue Whale', rarity:'legendary', pts:200, baseSpeed:2.8, scale:1.4,  noFlip:false, draw:drawBlueWhale,  desc:'The greatest creature alive!',     stageUnlock:5 },
+  { id:'dragonfish', name:'Dragonfish', rarity:'legendary', pts:250, baseSpeed:3.5, scale:1.1,  noFlip:false, draw:drawDragonfish, desc:'A mythical beast from the abyss!', stageUnlock:5 },
+  { id:'dolphin',   name:'Dolphin',   rarity:'uncommon',  pts:22,  baseSpeed:3.4, scale:0.9,  noFlip:false, draw:drawDolphin,   desc:'Playful and lightning fast!',      stageUnlock:2 },
+  { id:'mantaRay',  name:'Manta Ray', rarity:'rare',      pts:40,  baseSpeed:2.2, scale:0.85, noFlip:false, draw:drawMantaRay,  desc:'A graceful giant of the deep!',    stageUnlock:3 },
+  { id:'narwhal',   name:'Narwhal',   rarity:'epic',      pts:55,  baseSpeed:1.8, scale:0.95, noFlip:false, draw:drawNarwhal,   desc:'The unicorn of the ocean!',        stageUnlock:4 },
+];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STAGE DEFINITIONS
+   Modify pool, speedMult, challenge.target to tune each stage.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const STAGES = [
+  {
+    id:1, name:'Sunny Shallows',
+    bg:{ top:'#29B6F6', mid:'#0288D1', bot:'#01579B' },
+    pool:['clownfish','pufferfish','blueTang'],
+    speedMult:0.70, spawnInterval:90,
+    challenge:{
+      desc:'Catch 5 sea creatures to advance!',
+      label:'Catch 5',
+      check:s => s.stageCatches >= 5,
+      progress:s => ({ cur:s.stageCatches, max:5 }),
+    },
+    intro:'Welcome to the Sunny Shallows! 🌞\nCatch 5 creatures to dive deeper!',
+  },
+  {
+    id:2, name:'Coral Reef',
+    bg:{ top:'#00ACC1', mid:'#00838F', bot:'#006064' },
+    pool:['clownfish','pufferfish','blueTang','angelfish','starfish','crab','dolphin'],
+    speedMult:0.88, spawnInterval:80,
+    challenge:{
+      desc:'Catch 12 creatures including 3 different species!',
+      label:'12 & 3 species',
+      check:s => s.stageCatches >= 12 && s.stageSpecies.size >= 3,
+      progress:s => ({ cur:Math.min(s.stageCatches,12), max:12,
+                       sub:`Species: ${s.stageSpecies.size}/3` }),
+    },
+    intro:'You reached the Coral Reef! 🪸\nCatch 12 creatures — variety counts!',
+  },
+  {
+    id:3, name:'Open Ocean',
+    bg:{ top:'#1565C0', mid:'#0D47A1', bot:'#01237B' },
+    pool:['blueTang','angelfish','crab','shark','seahorse','seaTurtle','pufferfish','dolphin','mantaRay'],
+    speedMult:1.05, spawnInterval:72,
+    challenge:{
+      desc:'Catch 18 creatures and snag a Shark!',
+      label:'18 & 1 Shark',
+      check:s => s.stageCatches >= 18 && s.stageSpecies.has('shark'),
+      progress:s => ({ cur:Math.min(s.stageCatches,18), max:18,
+                       sub: s.stageSpecies.has('shark') ? '✅ Shark caught!' : '🦈 Need a Shark' }),
+    },
+    intro:'The Open Ocean awaits! 🌊\nWatch out for sharks — catch one!',
+  },
+  {
+    id:4, name:'Twilight Zone',
+    bg:{ top:'#1A237E', mid:'#0D1357', bot:'#050A30' },
+    pool:['angelfish','shark','seaTurtle','jellyfish','octopus','lobster','seahorse','mantaRay','narwhal'],
+    speedMult:1.22, spawnInterval:62,
+    challenge:{
+      desc:'Catch 20 creatures inc. a Jellyfish & Octopus!',
+      label:'20 & epic duo',
+      check:s => s.stageCatches >= 20 && s.stageSpecies.has('jellyfish') && s.stageSpecies.has('octopus'),
+      progress:s => ({ cur:Math.min(s.stageCatches,20), max:20,
+                       sub:`🪼${s.stageSpecies.has('jellyfish')?'✅':'❌'} 🐙${s.stageSpecies.has('octopus')?'✅':'❌'}` }),
+    },
+    intro:'The Twilight Zone glows! 🔮\nCatch the epic Jellyfish and Octopus!',
+  },
+  {
+    id:5, name:'Abyssal Wonder',
+    bg:{ top:'#0A0520', mid:'#050212', bot:'#020008' },
+    pool:['shark','jellyfish','octopus','lobster','blueWhale','dragonfish','seaTurtle','narwhal'],
+    speedMult:1.40, spawnInterval:52,
+    challenge:{
+      desc:'Catch a Legendary creature to complete your Ocean Dex!',
+      label:'1 Legendary!',
+      check:s => s.stageSpecies.has('blueWhale') || s.stageSpecies.has('dragonfish'),
+      progress:s => {
+        const got=s.stageSpecies.has('blueWhale')||s.stageSpecies.has('dragonfish');
+        return { cur:got?1:0, max:1, sub: got?'🏆 Legendary caught!':'Find the Legendary!' };
+      },
+    },
+    intro:'The Abyssal Wonder! 🌑\nLegendary creatures lurk here — catch one!',
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COLLECTION / POKÉDEX
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SAVE_KEY = 'oceanNetCatch_v2';
+const collection = {};   // id -> { count, firstStage }
+CREATURES.forEach(cr => { collection[cr.id] = { count:0, firstStage:null }; });
+
+function saveCollection() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(collection)); } catch(e){}
+}
+function loadCollection() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');
+    Object.keys(d).forEach(k => { if(collection[k]) Object.assign(collection[k], d[k]); });
+  } catch(e){}
+}
+function saveHighScore(){
+  if(score>highScore){highScore=score;try{localStorage.setItem('oceanNetCatch_hs',highScore);}catch(e){}}
+}
+function loadHighScore(){
+  try{highScore=parseInt(localStorage.getItem('oceanNetCatch_hs')||'0');}catch(e){}
+}
+
+/* ─── Rarity colours ─────────────────────────────────────────────────────── */
+const RARITY_COLOR = {
+  common:'#78909C', uncommon:'#43A047', rare:'#1E88E5', epic:'#8E24AA', legendary:'#F57F17'
+};
+const RARITY_LABEL = {
+  common:'Common', uncommon:'Uncommon', rare:'Rare', epic:'Epic', legendary:'Legendary'
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCENERY
+   ═══════════════════════════════════════════════════════════════════════════ */
+const bubbles = Array.from({length:32}, () => ({
+  x:Math.random()*W, y:Math.random()*H,
+  r:Math.random()*7+2, speed:Math.random()*0.65+0.2,
+  sway:Math.random()*0.4+0.1, phase:Math.random()*Math.PI*2,
+  alpha:Math.random()*0.4+0.15,
+}));
+
+const seaweeds = Array.from({length:9}, () => ({
+  x:Math.random()*W, segs:Math.floor(Math.random()*5)+4,
+  phase:Math.random()*Math.PI*2, hue:105+Math.random()*55, thick:Math.random()*5+5,
+}));
+
+const corals = Array.from({length:8}, () => ({
+  x:Math.random()*W, type:Math.floor(Math.random()*3),
+  hue: Math.random()<0.5 ? 345+Math.random()*25 : 20+Math.random()*25,
+  sc:Math.random()*0.5+0.6,
+}));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GAME STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+let score=0, totalCatches=0;
+let stageIdx=0;
+let stageCatches=0;
+let stageSpecies=new Set();
+
+// Screen: 'playing' | 'stageClear' | 'pokédex' | 'intro'
+let screen='intro';
+let introTimer=0;
+const INTRO_DURATION=200; // frames to show stage intro
+
+// bg interpolation
+let bgFrom={...STAGES[0].bg};
+let bgTo  ={...STAGES[0].bg};
+let bgT   =1;
+
+let spawnTimer=0;
+const creatures=[], nets=[], particles=[], popups=[];
+
+// cannon
+const cannon={x:W/2, y:H-58, angle:-Math.PI/2, recoil:0};
+
+// pokédex UI state
+let dexScroll=0, dexFilter='all', dexMaxScroll=0;
+// hit-test areas populated each frame
+let dexFilterBtns=[], dexCards=[], dexCloseArea=null;
+
+let gameTime=0;
+
+/* ─── Combo + Power-ups ─────────────────────────────────────────────────── */
+let combo=1, comboTimer=0;
+const COMBO_DURATION=180; // 3 s at 60 fps
+let activeEffect=null, effectTimer=0;
+let highScore=0;
+const POWERUP_TYPES=[
+  {id:'wideNet',      icon:'🔵', color:'#29B6F6', label:'Wide Net!',   duration:480},
+  {id:'doublePoints', icon:'⭐', color:'#FFD700', label:'2× Points!',  duration:480},
+  {id:'freeze',       icon:'❄️', color:'#00E5FF', label:'Frozen!',     duration:360},
+];
+const powerups=[];
+let powerupSpawnTimer=0;
+const POWERUP_SPAWN_INTERVAL=520;
+
+/* ─── Stage transition ───────────────────────────────────────────────────── */
+function gotoStage(idx){
+  if(idx >= STAGES.length){ screen='playing'; return; }
+  stageIdx=idx;
+  stageCatches=0;
+  stageSpecies=new Set();
+  creatures.length=0; nets.length=0; powerups.length=0;
+  combo=1; comboTimer=0; activeEffect=null; effectTimer=0; powerupSpawnTimer=0;
+  bgFrom={...bgTo};
+  bgTo={...STAGES[stageIdx].bg};
+  bgT=0;
+  spawnTimer=0;
+  screen='intro';
+  introTimer=0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BACKGROUND + SCENERY DRAWING
+   ═══════════════════════════════════════════════════════════════════════════ */
+function lerpColor(a,b,t){
+  const h=c=>{const n=parseInt(c.slice(1),16);return[n>>16,(n>>8)&0xFF,n&0xFF];};
+  const [r1,g1,b1]=h(a), [r2,g2,b2]=h(b);
+  const r=r=>Math.round(r1+(r2-r1)*t), g=g=>Math.round(g1+(g2-g1)*t), bl=b=>Math.round(b1+(b2-b1)*t);
+  return `rgb(${r()},${g()},${bl()})`;
+}
+
+function drawBackground(){
+  const top=lerpColor(bgFrom.top,bgTo.top,bgT);
+  const mid=lerpColor(bgFrom.mid,bgTo.mid,bgT);
+  const bot=lerpColor(bgFrom.bot,bgTo.bot,bgT);
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,top); g.addColorStop(0.5,mid); g.addColorStop(1,bot);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // light rays
+  ctx.save();
+  for(let i=0;i<5;i++){
+    const rx=W*(i/5)+W/10+Math.sin(gameTime*0.003+i)*25;
+    const rg=ctx.createLinearGradient(rx,0,rx+50,H*0.65);
+    rg.addColorStop(0,'rgba(255,255,255,0.07)'); rg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=rg;
+    ctx.beginPath();
+    ctx.moveTo(rx-15,0);ctx.lineTo(rx+65,0);ctx.lineTo(rx+100,H*0.65);ctx.lineTo(rx-55,H*0.65);
+    ctx.closePath();ctx.fill();
+  }
+  // abyss particles (stage 4-5)
+  if(stageIdx>=3){
+    ctx.fillStyle=`rgba(0,229,255,${0.03*(stageIdx-2)})`;
+    for(let i=0;i<20;i++){
+      const px=(Math.sin(gameTime*0.007+i*2.3)*0.5+0.5)*W;
+      const py=(Math.sin(gameTime*0.009+i*1.7)*0.5+0.5)*H;
+      ctx.beginPath();ctx.arc(px,py,2,0,Math.PI*2);ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function drawSeabed(){
+  const sg=ctx.createLinearGradient(0,H-85,0,H);
+  sg.addColorStop(0,'#9b8060'); sg.addColorStop(1,'#5a3e28');
+  ctx.fillStyle=sg;
+  ctx.beginPath(); ctx.moveTo(0,H-55);
+  for(let x=0;x<=W;x+=22) ctx.lineTo(x,H-55+Math.sin(x*0.038+gameTime*0.008)*9);
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+}
+
+function drawSeaweeds(){
+  seaweeds.forEach(sw=>{
+    const segH=17;
+    ctx.lineWidth=sw.thick; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.strokeStyle=`hsl(${sw.hue},62%,28%)`;
+    ctx.beginPath();
+    let sx=sw.x, sy=H-64; ctx.moveTo(sx,sy);
+    for(let i=0;i<sw.segs;i++){
+      sx+=Math.sin(gameTime*0.016+sw.phase+i*0.6)*14; sy-=segH;
+      ctx.lineTo(sx,sy);
+    }
+    ctx.stroke();
+    ctx.fillStyle=`hsl(${sw.hue+20},68%,38%)`;
+    ctx.beginPath();ctx.arc(sx,sy,sw.thick*0.9,0,Math.PI*2);ctx.fill();
+  });
+}
+
+function drawBubbles(){
+  bubbles.forEach(b=>{
+    b.y-=b.speed;
+    if(b.y<-20){b.y=H+10;b.x=Math.random()*W;}
+    const bx=b.x+Math.sin(gameTime*0.014*b.sway+b.phase)*18;
+    ctx.save(); ctx.globalAlpha=b.alpha;
+    ctx.strokeStyle='rgba(160,230,255,.9)'; ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(bx,b.y,b.r,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(200,245,255,.12)';ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.45)';
+    ctx.beginPath();ctx.arc(bx-b.r*.3,b.y-b.r*.3,b.r*.3,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawCorals(){
+  corals.forEach(co=>{
+    const by=H-60;
+    ctx.save(); ctx.translate(co.x,by); ctx.scale(co.sc,co.sc);
+    if(co.type===0){
+      function branch(x,y,len,ang,dep){
+        if(dep===0||len<4)return;
+        const ex=x+Math.cos(ang)*len, ey=y-Math.sin(ang)*len;
+        ctx.strokeStyle=`hsl(${co.hue},75%,${30+dep*8}%)`;
+        ctx.lineWidth=dep*2; ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ex,ey);ctx.stroke();
+        branch(ex,ey,len*.62,ang+0.5,dep-1); branch(ex,ey,len*.62,ang-0.5,dep-1);
+      }
+      branch(0,0,28,Math.PI/2,4);
+    } else if(co.type===1){
+      for(let i=0;i<6;i++){
+        const bx=(i%3-1)*12, by2=-Math.floor(i/3)*14-8;
+        ctx.fillStyle=`hsl(${co.hue+i*5},72%,48%)`;
+        ctx.beginPath();ctx.arc(bx,by2,9,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.3)';
+        ctx.beginPath();ctx.arc(bx-2,by2-2,3,0,Math.PI*2);ctx.fill();
+      }
+    } else {
+      for(let i=-4;i<=4;i++){
+        const sw=Math.sin(gameTime*0.02+i*.3)*5;
+        ctx.strokeStyle=`hsl(${co.hue+i*3},68%,44%)`;ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(0,0);
+        ctx.quadraticCurveTo(i*8+sw,-20,i*12+sw,-40);ctx.stroke();
+      }
+    }
+    ctx.restore();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CANNON
+   ═══════════════════════════════════════════════════════════════════════════ */
+function drawCannon(){
+  ctx.save(); ctx.translate(cannon.x, cannon.y);
+  cannon.recoil=Math.max(0,cannon.recoil-0.07);
+  const rc=cannon.recoil*7;
+  // base
+  const bg=ctx.createRadialGradient(0,4,4,0,4,42);
+  bg.addColorStop(0,'#3a5f8a'); bg.addColorStop(1,'#1a3050');
+  ctx.fillStyle=bg; ctx.beginPath();ctx.arc(0,0,40,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#5588bb';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(0,0,38,0,Math.PI*2);ctx.stroke();
+  // water swirl on base
+  ctx.strokeStyle='rgba(100,200,255,.28)';ctx.lineWidth=2;
+  for(let i=0;i<3;i++){
+    const a=gameTime*0.04+(Math.PI*2/3)*i;
+    ctx.beginPath();ctx.arc(Math.cos(a)*14,Math.sin(a)*14,10,a,a+Math.PI*1.2);ctx.stroke();
+  }
+  ctx.rotate(cannon.angle); ctx.translate(-rc,0);
+  // barrel
+  const barG=ctx.createLinearGradient(-10,-13,10,13);
+  barG.addColorStop(0,'#5ba3d9'); barG.addColorStop(.5,'#2471a3'); barG.addColorStop(1,'#144e7a');
+  ctx.fillStyle=barG;
+  ctx.beginPath();ctx.roundRect(8,-13,62,26,8);ctx.fill();
+  ctx.strokeStyle='#7bbfe8';ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(8,-13,62,26,8);ctx.stroke();
+  // stripes
+  for(let i=0;i<3;i++){
+    ctx.strokeStyle='rgba(200,230,255,.22)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(22+i*16,-10);ctx.lineTo(22+i*16,10);ctx.stroke();
+  }
+  // nozzle
+  ctx.fillStyle='#a0d4f5';ctx.beginPath();ctx.arc(72,0,15,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#4aa8e0';ctx.beginPath();ctx.arc(72,0,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.beginPath();ctx.arc(67,-4,4,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  // aim dots
+  ctx.save();
+  for(let d=92;d<=280;d+=28){
+    ctx.globalAlpha=Math.max(0,.42-d/920);
+    ctx.fillStyle='#7ee8ff';
+    ctx.beginPath();ctx.arc(
+      cannon.x+Math.cos(cannon.angle)*d, cannon.y+Math.sin(cannon.angle)*d,
+      3.5-d/200,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NET
+   ═══════════════════════════════════════════════════════════════════════════ */
+function fireNet(){
+  cannon.recoil=1;
+  const tip=74;
+  const maxR=activeEffect==='wideNet'?Math.round(CFG.netMaxRadius*1.72):CFG.netMaxRadius;
+  nets.push({
+    x:cannon.x+Math.cos(cannon.angle)*tip,
+    y:cannon.y+Math.sin(cannon.angle)*tip,
+    dx:Math.cos(cannon.angle)*CFG.netSpeed,
+    dy:Math.sin(cannon.angle)*CFG.netSpeed,
+    r:6, maxR, age:0, maxAge:CFG.netLifetime, rot:0, active:true,
+  });
+}
+
+function drawNet(n){
+  ctx.save(); ctx.translate(n.x,n.y); ctx.rotate(n.rot);
+  const alpha=Math.max(0,1-n.age/n.maxAge);
+  // spokes
+  ctx.strokeStyle=`rgba(255,215,60,${alpha*.8})`;ctx.lineWidth=1.8;
+  for(let i=0;i<8;i++){
+    const a=(Math.PI*2/8)*i;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*n.r,Math.sin(a)*n.r);ctx.stroke();
+  }
+  // rings
+  for(let ri=1;ri<=3;ri++){
+    ctx.strokeStyle=`rgba(255,215,60,${alpha*.65})`;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(0,0,(n.r/3)*ri,0,Math.PI*2);ctx.stroke();
+  }
+  // outer glow
+  ctx.strokeStyle=`rgba(255,240,120,${alpha*.3})`;ctx.lineWidth=6;
+  ctx.beginPath();ctx.arc(0,0,n.r,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle=`rgba(255,210,0,${alpha})`;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.arc(0,0,n.r,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PARTICLES + POPUPS
+   ═══════════════════════════════════════════════════════════════════════════ */
+const PARTY=['#FFD700','#FF6B6B','#4ECDC4','#A8E6CF','#FFB347','#DDA0DD','#87CEEB'];
+
+function burst(x,y,n=18){
+  for(let i=0;i<n;i++){
+    const a=(Math.PI*2/n)*i+Math.random()*.3, spd=Math.random()*5+2;
+    particles.push({x,y,dx:Math.cos(a)*spd,dy:Math.sin(a)*spd-1,
+      life:1,decay:.024+Math.random()*.02,size:Math.random()*9+4,
+      color:PARTY[Math.floor(Math.random()*PARTY.length)],star:Math.random()<.45});
+  }
+}
+
+function drawStar5(x,y,r,color,alpha){
+  ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;
+  ctx.beginPath();
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2-Math.PI/2, ai=a+Math.PI/5;
+    ctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);
+    ctx.lineTo(x+Math.cos(ai)*r*.4,y+Math.sin(ai)*r*.4);
+  }
+  ctx.closePath();ctx.fill();ctx.restore();
+}
+
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.save();ctx.globalAlpha=p.life;
+    if(p.star) drawStar5(p.x,p.y,p.size,p.color,p.life);
+    else{
+      ctx.fillStyle=p.color;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   POWER-UPS
+   ═══════════════════════════════════════════════════════════════════════════ */
+const _puRGB={wideNet:'41,182,246',doublePoints:'255,215,0',freeze:'0,229,255'};
+
+function drawPowerup(pu){
+  ctx.save();ctx.translate(pu.x,pu.y);
+  const pulse=Math.sin(gameTime*.09+pu.phase)*.3+.7;
+  ctx.shadowColor=pu.def.color;ctx.shadowBlur=16*pulse;
+  ctx.fillStyle=`rgba(${_puRGB[pu.def.id]},.22)`;
+  ctx.beginPath();ctx.arc(0,0,22,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=pu.def.color;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.arc(0,0,22,0,Math.PI*2);ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.font='20px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(pu.def.icon,0,1);
+  ctx.restore();
+}
+
+function spawnPowerup(){
+  const def=POWERUP_TYPES[Math.floor(Math.random()*POWERUP_TYPES.length)];
+  powerups.push({
+    x:Math.random()*(W-140)+70, y:H+30,
+    dy:-(Math.random()*.7+.5),
+    dx:(Math.random()-.5)*.5,
+    phase:Math.random()*Math.PI*2,
+    def, active:true,
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CREATURE SPAWNING + DRAWING
+   ═══════════════════════════════════════════════════════════════════════════ */
+function pickCreature(){
+  const stage=STAGES[stageIdx];
+  const pool=stage.pool.map(id=>CREATURES.find(c=>c.id===id)).filter(Boolean);
+  // weighted by rarity
+  const total=pool.reduce((s,cr)=>s+CFG.weights[cr.rarity],0);
+  let r=Math.random()*total;
+  for(const cr of pool){ r-=CFG.weights[cr.rarity]; if(r<=0)return cr; }
+  return pool[pool.length-1];
+}
+
+function spawnCreature(){
+  if(creatures.filter(c=>!c.captured).length>=CFG.maxOnScreen) return;
+  const def=pickCreature();
+  const left=Math.random()<.5;
+  const depth=.14+Math.random()*.62;
+  const spd=def.baseSpeed*STAGES[stageIdx].speedMult*(1+Math.random()*.3-.15);
+  creatures.push({
+    ...def, x:left?-100:W+100, y:H*depth,
+    dx:left?spd:-spd, dy:(Math.random()-.5)*.55,
+    phase:Math.random()*Math.PI*2,
+    wobbleAmp:Math.random()*5+2, wobbleSpeed:Math.random()*.04+.02,
+    captured:false, captureT:0, id2:Math.random(),
+  });
+}
+
+function drawCreatureOnScreen(c){
+  ctx.save();
+  ctx.translate(c.x,c.y);
+  if(c.captured){
+    const p=c.captureT/45;
+    ctx.rotate(p*Math.PI*3); ctx.scale(1-p,1-p); ctx.globalAlpha=1-p;
+  } else {
+    ctx.translate(0, Math.sin(gameTime*c.wobbleSpeed+c.phase)*c.wobbleAmp);
+    if(c.dx<0 && !c.noFlip) ctx.scale(-1,1);
+  }
+  ctx.scale(c.scale,c.scale);
+  c.draw(ctx);
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COLLISION DETECTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+function checkCollisions(){
+  for(const net of nets){
+    if(!net.active) continue;
+    // powerup collection
+    for(let pi=powerups.length-1;pi>=0;pi--){
+      const pu=powerups[pi];
+      if(!pu.active) continue;
+      const pdx=net.x-pu.x, pdy=net.y-pu.y;
+      if(Math.sqrt(pdx*pdx+pdy*pdy)<net.r+22){
+        pu.active=false; net.active=false;
+        activeEffect=pu.def.id; effectTimer=pu.def.duration;
+        burst(pu.x,pu.y,14);
+        popups.push({x:pu.x,y:pu.y-36,text:pu.def.label,color:pu.def.color,life:1,size:28,dy:-2});
+        break;
+      }
+    }
+    if(!net.active) continue;
+    // creature collection
+    for(const cr of creatures){
+      if(cr.captured) continue;
+      const dx=net.x-cr.x, dy=net.y-cr.y;
+      if(Math.sqrt(dx*dx+dy*dy) < net.r+cr.scale*30){
+        cr.captured=true; net.active=false;
+        // combo
+        if(comboTimer>0) combo=Math.min(5,combo+1); else combo=1;
+        comboTimer=COMBO_DURATION;
+        const mult=combo*(activeEffect==='doublePoints'?2:1);
+        const earned=cr.pts*mult;
+        score+=earned; totalCatches++; stageCatches++; stageSpecies.add(cr.id);
+        saveHighScore();
+        // update collection
+        const isNew=collection[cr.id].count===0;
+        collection[cr.id].count++;
+        if(!collection[cr.id].firstStage) collection[cr.id].firstStage=STAGES[stageIdx].id;
+        saveCollection();
+        burst(cr.x,cr.y);
+        const comboStr=combo>1?` ×${combo}`:'';
+        popups.push({
+          x:cr.x, y:cr.y-36,
+          text:`+${earned}${comboStr}${isNew?' 🆕':''}`,
+          color:isNew?'#FFD700':RARITY_COLOR[cr.rarity],
+          life:1, size:34, dy:-2.2,
+        });
+        // check stage challenge
+        if(STAGES[stageIdx].challenge.check({stageCatches,stageSpecies})){
+          setTimeout(()=>{screen='stageClear';},600);
+        }
+      }
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HUD DRAWING
+   ═══════════════════════════════════════════════════════════════════════════ */
+function drawHUD(){
+  const stage=STAGES[stageIdx];
+  const prog=stage.challenge.progress({stageCatches,stageSpecies});
+
+  // top bar backdrop
+  ctx.fillStyle='rgba(0,10,30,.55)';
+  ctx.beginPath();ctx.roundRect(0,0,W,70,0);ctx.fill();
+
+  // stage name (center)
+  ctx.fillStyle='#7ee8ff';
+  ctx.font='bold 22px Comic Sans MS,cursive';
+  ctx.textAlign='center';
+  ctx.shadowColor='rgba(0,180,255,.7)';ctx.shadowBlur=10;
+  ctx.fillText(`Stage ${stage.id}: ${stage.name}`,W/2,30);
+  ctx.shadowBlur=0;
+
+  // score (right)
+  ctx.fillStyle='#FFD700';
+  ctx.font='bold 28px Comic Sans MS,cursive';
+  ctx.textAlign='right';
+  ctx.shadowColor='rgba(255,215,0,.6)';ctx.shadowBlur=8;
+  ctx.fillText(`${score}`,W-20,36);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,220,100,.7)';
+  ctx.font='12px Comic Sans MS,cursive';
+  ctx.fillText('SCORE',W-20,50);
+  if(highScore>0){
+    ctx.fillStyle='rgba(200,175,60,.55)';
+    ctx.font='11px Comic Sans MS,cursive';
+    ctx.fillText(`BEST ${highScore}`,W-20,63);
+  }
+  // combo (below top bar)
+  if(combo>1){
+    const hue=Math.max(0,40-combo*8);
+    const ct=`×${combo} COMBO!`;
+    ctx.font=`bold ${17+combo}px Comic Sans MS,cursive`;
+    const cw2=ctx.measureText(ct).width+24;
+    ctx.fillStyle='rgba(0,5,20,.72)';
+    ctx.beginPath();ctx.roundRect(W-cw2-8,72,cw2,28,14);ctx.fill();
+    ctx.fillStyle=`hsl(${hue},100%,62%)`;
+    ctx.textAlign='right';
+    ctx.shadowColor=`hsl(${hue},100%,38%)`;ctx.shadowBlur=10;
+    ctx.fillText(ct,W-16,91);
+    ctx.shadowBlur=0;
+  }
+
+  // challenge progress (left of center)
+  ctx.textAlign='left';
+  ctx.fillStyle='rgba(200,240,255,.85)';
+  ctx.font='13px Comic Sans MS,cursive';
+  ctx.fillText(stage.challenge.desc, 80, 22);
+
+  // progress bar
+  const barX=80, barY=32, barW=Math.min(380,W*.4), barH=14;
+  const pct=Math.min(1, prog.cur/prog.max);
+  ctx.fillStyle='rgba(255,255,255,.15)';
+  ctx.beginPath();ctx.roundRect(barX,barY,barW,barH,7);ctx.fill();
+  const barGrad=ctx.createLinearGradient(barX,0,barX+barW,0);
+  barGrad.addColorStop(0,'#4fc3f7'); barGrad.addColorStop(1,'#0288d1');
+  ctx.fillStyle=barGrad;
+  ctx.beginPath();ctx.roundRect(barX,barY,barW*pct,barH,7);ctx.fill();
+  ctx.strokeStyle='rgba(150,220,255,.4)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(barX,barY,barW,barH,7);ctx.stroke();
+
+  if(prog.sub){
+    ctx.fillStyle='rgba(200,240,255,.7)';
+    ctx.font='12px Comic Sans MS,cursive';
+    ctx.fillText(prog.sub, barX, barY+barH+14);
+  }
+
+  // popups
+  popups.forEach(p=>{
+    ctx.save();ctx.globalAlpha=p.life;
+    ctx.font=`bold ${p.size}px Comic Sans MS,cursive`;
+    ctx.textAlign='center';
+    ctx.strokeStyle='rgba(0,0,0,.8)';ctx.lineWidth=4;
+    ctx.strokeText(p.text,p.x,p.y);
+    ctx.fillStyle=p.color;ctx.fillText(p.text,p.x,p.y);
+    ctx.restore();
+  });
+
+  // active effect indicator (bottom-right)
+  if(activeEffect&&effectTimer>0){
+    const eDef=POWERUP_TYPES.find(p=>p.id===activeEffect);
+    if(eDef){
+      const bx=W-172, by=H-64, bw=160, bh=52;
+      ctx.fillStyle='rgba(0,8,25,.78)';
+      ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.fill();
+      ctx.strokeStyle=eDef.color;ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.roundRect(bx,by,bw,bh,10);ctx.stroke();
+      ctx.fillStyle=eDef.color;
+      ctx.font='bold 14px Comic Sans MS,cursive';
+      ctx.textAlign='center';
+      ctx.fillText(`${eDef.icon} ${eDef.label}`,bx+bw/2,by+22);
+      ctx.fillStyle='rgba(255,255,255,.12)';
+      ctx.beginPath();ctx.roundRect(bx+8,by+30,bw-16,9,4);ctx.fill();
+      const pct2=effectTimer/eDef.duration;
+      ctx.fillStyle=eDef.color;
+      ctx.beginPath();ctx.roundRect(bx+8,by+30,(bw-16)*pct2,9,4);ctx.fill();
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STAGE INTRO SCREEN
+   ═══════════════════════════════════════════════════════════════════════════ */
+function drawIntroScreen(){
+  const alpha=Math.min(1,introTimer/30)*Math.min(1,(INTRO_DURATION-introTimer)/30);
+  ctx.save();
+  ctx.fillStyle=`rgba(0,5,20,${alpha*.75})`;
+  ctx.fillRect(0,0,W,H);
+  const stage=STAGES[stageIdx];
+  // stage number badge
+  ctx.globalAlpha=alpha;
+  ctx.shadowColor=RARITY_COLOR.rare; ctx.shadowBlur=30;
+  ctx.fillStyle='#FFD700';
+  ctx.font='bold 20px Comic Sans MS,cursive';
+  ctx.textAlign='center';
+  ctx.fillText(`— STAGE ${stage.id} —`,W/2,H/2-70);
+  ctx.shadowColor='rgba(126,232,255,.9)'; ctx.shadowBlur=20;
+  ctx.fillStyle='#7ee8ff';
+  ctx.font='bold 48px Comic Sans MS,cursive';
+  ctx.fillText(stage.name,W/2,H/2-20);
+  ctx.shadowBlur=0;
+  const lines=stage.intro.split('\n');
+  ctx.fillStyle='rgba(200,240,255,.9)';
+  ctx.font='22px Comic Sans MS,cursive';
+  lines.forEach((l,i)=>ctx.fillText(l,W/2,H/2+38+i*32));
+  if(introTimer>60){
+    ctx.fillStyle=`rgba(255,220,100,${Math.sin(gameTime*.08)*.5+.5})`;
+    ctx.font='18px Comic Sans MS,cursive';
+    ctx.fillText('Click or press Space to start!',W/2,H/2+120);
+  }
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STAGE CLEAR SCREEN
+   ═══════════════════════════════════════════════════════════════════════════ */
+let stageClearTimer=0;
+function drawStageClearScreen(){
+  stageClearTimer++;
+  ctx.save();
+  ctx.fillStyle='rgba(0,5,20,.82)';ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=Math.min(1,stageClearTimer/30);
+  // fireworks
+  if(stageClearTimer%20===0){
+    burst(Math.random()*W*.8+W*.1, Math.random()*H*.5+H*.1, 24);
+  }
+  ctx.fillStyle='#FFD700';
+  ctx.shadowColor='rgba(255,200,0,.9)'; ctx.shadowBlur=24;
+  ctx.font='bold 56px Comic Sans MS,cursive';
+  ctx.textAlign='center';
+  ctx.fillText('🎉 Stage Clear! 🎉',W/2,H/2-80);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#7ee8ff';
+  ctx.font='28px Comic Sans MS,cursive';
+  ctx.fillText(`Stage ${STAGES[stageIdx].id}: ${STAGES[stageIdx].name} complete!`,W/2,H/2-30);
+  ctx.fillStyle='#FFF';
+  ctx.font='22px Comic Sans MS,cursive';
+  ctx.fillText(`Creatures caught: ${stageCatches}   Score: ${score}`,W/2,H/2+16);
+  // unlocked creatures
+  const unlocked=CREATURES.filter(cr=>cr.stageUnlock===STAGES[stageIdx].id+1);
+  if(unlocked.length>0 && stageIdx<STAGES.length-1){
+    ctx.fillStyle='#69FF47';
+    ctx.font='18px Comic Sans MS,cursive';
+    ctx.fillText(`🆕 New creatures in next stage: ${unlocked.map(c=>c.name).join(', ')}`,W/2,H/2+56);
+  }
+  // next button
+  if(stageClearTimer>60){
+    const btnW=260, btnH=56, btnX=W/2-btnW/2, btnY=H/2+100;
+    const pulse=Math.sin(stageClearTimer*.08)*.5+.5;
+    ctx.fillStyle=`rgba(${30+pulse*30},${180+pulse*40},${100+pulse*30},1)`;
+    ctx.beginPath();ctx.roundRect(btnX,btnY,btnW,btnH,28);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(btnX,btnY,btnW,btnH,28);ctx.stroke();
+    ctx.fillStyle='#FFF';
+    ctx.font='bold 24px Comic Sans MS,cursive';
+    const label=stageIdx<STAGES.length-1?'Next Stage →':'Play Again!';
+    ctx.fillText(label,W/2,btnY+37);
+    // store hit area
+    ctx._stageClearBtn={x:btnX,y:btnY,w:btnW,h:btnH};
+  } else {
+    ctx._stageClearBtn=null;
+  }
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   POKÉDEX UI  (canvas overlay)
+   ═══════════════════════════════════════════════════════════════════════════ */
+const DEX_COLS=4;
+const CARD_W=148, CARD_H=170, CARD_PAD=12;
+const DEX_FILTERS=['all','common','uncommon','rare','epic','legendary'];
+
+function dexFilteredCreatures(){
+  return CREATURES.filter(cr=>dexFilter==='all'||cr.rarity===dexFilter);
+}
+
+function drawPokédex(){
+  const panW=Math.min(W*.92,720), panH=Math.min(H*.92,620);
+  const panX=(W-panW)/2, panY=(H-panH)/2;
+  const cols=window.innerWidth<500?2:DEX_COLS;
+  const cw=(panW-CARD_PAD*(cols+1))/cols;
+  const ch=CARD_H;
+
+  ctx.save();
+  // overlay
+  ctx.fillStyle='rgba(0,5,20,.88)';ctx.fillRect(0,0,W,H);
+  // panel
+  ctx.fillStyle='rgba(0,20,50,.97)';
+  ctx.beginPath();ctx.roundRect(panX,panY,panW,panH,18);ctx.fill();
+  ctx.strokeStyle='rgba(100,180,255,.35)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(panX,panY,panW,panH,18);ctx.stroke();
+
+  // title bar
+  const titleH=52;
+  ctx.fillStyle='rgba(0,40,80,.8)';
+  ctx.beginPath();ctx.roundRect(panX,panY,panW,titleH,{tl:18,tr:18,bl:0,br:0});ctx.fill();
+  ctx.fillStyle='#7ee8ff';
+  ctx.font='bold 24px Comic Sans MS,cursive';
+  ctx.textAlign='left';
+  ctx.shadowColor='rgba(0,200,255,.7)';ctx.shadowBlur=10;
+  ctx.fillText('🌊 Ocean Dex',panX+18,panY+34);
+  ctx.shadowBlur=0;
+  // caught count
+  const caughtN=CREATURES.filter(cr=>collection[cr.id].count>0).length;
+  ctx.fillStyle='#FFD700';
+  ctx.font='bold 18px Comic Sans MS,cursive';
+  ctx.textAlign='right';
+  ctx.fillText(`${caughtN} / ${CREATURES.length} Caught`,panX+panW-60,panY+34);
+  // close button
+  const closeX=panX+panW-38, closeY=panY+10, closeR=16;
+  ctx.fillStyle='rgba(255,80,80,.8)';
+  ctx.beginPath();ctx.arc(closeX+closeR,closeY+closeR,closeR,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#FFF';ctx.font='bold 18px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('✕',closeX+closeR,closeY+closeR+6);
+  dexCloseArea={x:closeX,y:closeY,w:closeR*2,h:closeR*2};
+
+  // filter tabs
+  const tabY=panY+titleH+6, tabH=30, tabGap=4;
+  const tabW=(panW-CARD_PAD*2-tabGap*(DEX_FILTERS.length-1))/DEX_FILTERS.length;
+  dexFilterBtns=[];
+  DEX_FILTERS.forEach((f,i)=>{
+    const tx=panX+CARD_PAD+i*(tabW+tabGap), ty=tabY;
+    const active=dexFilter===f;
+    ctx.fillStyle=active?RARITY_COLOR[f]||'#1E88E5':'rgba(255,255,255,.08)';
+    ctx.beginPath();ctx.roundRect(tx,ty,tabW,tabH,6);ctx.fill();
+    ctx.strokeStyle=active?'rgba(255,255,255,.5)':'rgba(255,255,255,.1)';
+    ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(tx,ty,tabW,tabH,6);ctx.stroke();
+    ctx.fillStyle='#FFF';ctx.font='bold 11px Comic Sans MS,cursive';ctx.textAlign='center';
+    ctx.fillText(f.charAt(0).toUpperCase()+f.slice(1),tx+tabW/2,ty+tabH/2+4);
+    dexFilterBtns.push({x:tx,y:ty,w:tabW,h:tabH,filter:f});
+  });
+
+  // grid area
+  const gridY=tabY+tabH+10, gridH=panH-(gridY-panY)-10;
+  ctx.save();
+  ctx.beginPath();ctx.rect(panX,gridY,panW,gridH);ctx.clip();
+
+  const filtered=dexFilteredCreatures();
+  const rows=Math.ceil(filtered.length/cols);
+  const totalGridH=rows*(ch+CARD_PAD)+CARD_PAD;
+  dexMaxScroll=Math.max(0,totalGridH-gridH);
+  dexScroll=Math.max(0,Math.min(dexScroll,dexMaxScroll));
+  dexCards=[];
+
+  filtered.forEach((cr,idx)=>{
+    const col=idx%cols, row=Math.floor(idx/cols);
+    const cx=panX+CARD_PAD+col*(cw+CARD_PAD);
+    const cy=gridY+CARD_PAD+row*(ch+CARD_PAD)-dexScroll;
+    if(cy+ch<gridY-20||cy>gridY+gridH+20) return; // cull
+    const caught=collection[cr.id].count>0;
+    const cnt=collection[cr.id].count;
+    const stars=cnt===0?0:cnt<5?1:cnt<15?2:3;
+
+    // card bg
+    ctx.fillStyle=caught?`rgba(${hexToRgb(RARITY_COLOR[cr.rarity]||'#333')},0.18)`:'rgba(10,15,30,.8)';
+    ctx.beginPath();ctx.roundRect(cx,cy,cw,ch,10);ctx.fill();
+    ctx.strokeStyle=caught?RARITY_COLOR[cr.rarity]:'rgba(100,130,180,.2)';
+    ctx.lineWidth=caught?2:1;
+    ctx.beginPath();ctx.roundRect(cx,cy,cw,ch,10);ctx.stroke();
+
+    // creature preview area
+    const previewH=90, previewY=cy+8;
+    ctx.save();
+    ctx.beginPath();ctx.rect(cx+4,previewY,cw-8,previewH);ctx.clip();
+    ctx.translate(cx+cw/2, previewY+previewH/2);
+    ctx.scale(0.65,0.65);
+    if(!caught){
+      ctx.filter='grayscale(100%) brightness(10%)';ctx.globalAlpha=0.5;
+    }
+    cr.draw(ctx);
+    ctx.restore();
+
+    // rarity badge
+    ctx.fillStyle=RARITY_COLOR[cr.rarity];
+    ctx.font='bold 9px Comic Sans MS,cursive';
+    ctx.textAlign='center';
+    ctx.fillText(RARITY_LABEL[cr.rarity].toUpperCase(),cx+cw/2,cy+previewH+14);
+
+    // name
+    ctx.fillStyle=caught?'#FFF':'rgba(150,170,200,.5)';
+    ctx.font=`bold 13px Comic Sans MS,cursive`;
+    ctx.textAlign='center';
+    ctx.fillText(caught?cr.name:'???',cx+cw/2,cy+previewH+30);
+
+    // stars
+    if(caught){
+      ctx.font='16px serif';
+      const starStr=(stars>=1?'⭐':'☆')+(stars>=2?'⭐':'☆')+(stars>=3?'⭐':'☆');
+      ctx.fillText(starStr,cx+cw/2,cy+previewH+50);
+      ctx.fillStyle='rgba(200,220,255,.7)';
+      ctx.font='11px Comic Sans MS,cursive';
+      ctx.fillText(`×${cnt} caught`,cx+cw/2,cy+previewH+66);
+    } else {
+      ctx.fillStyle='rgba(100,120,160,.5)';
+      ctx.font='12px Comic Sans MS,cursive';
+      ctx.fillText('Not caught yet',cx+cw/2,cy+previewH+52);
+    }
+
+    dexCards.push({x:cx,y:cy,w:cw,h:ch,cr});
+  });
+
+  ctx.restore();
+
+  // scroll indicator
+  if(dexMaxScroll>0){
+    const trackH=gridH-10, trackX=panX+panW-14, trackY=gridY+5;
+    ctx.fillStyle='rgba(255,255,255,.08)';
+    ctx.beginPath();ctx.roundRect(trackX,trackY,6,trackH,3);ctx.fill();
+    const thumbH=Math.max(30,(trackH/(dexMaxScroll+trackH))*trackH);
+    const thumbY=trackY+(dexScroll/dexMaxScroll)*(trackH-thumbH);
+    ctx.fillStyle='rgba(100,180,255,.5)';
+    ctx.beginPath();ctx.roundRect(trackX,thumbY,6,thumbH,3);ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function hexToRgb(hex){
+  const n=parseInt(hex.slice(1),16);
+  return `${n>>16},${(n>>8)&0xFF},${n&0xFF}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN LOOP
+   ═══════════════════════════════════════════════════════════════════════════ */
+function loop(){
+  gameTime++;
+  bgT=Math.min(1,bgT+0.02);
+
+  ctx.clearRect(0,0,W,H);
+  drawBackground();
+  drawSeaweeds();
+  drawBubbles();
+  drawCorals();
+  drawSeabed();
+
+  if(screen==='intro'){
+    introTimer++;
+    drawCannon();
+    drawIntroScreen();
+    if(introTimer>=INTRO_DURATION) screen='playing';
+  } else if(screen==='playing'){
+    // timers
+    if(comboTimer>0){comboTimer--;if(comboTimer===0)combo=1;}
+    if(effectTimer>0){effectTimer--;}else{activeEffect=null;}
+    // spawn creatures
+    const si=Math.max(CFG.spawnMin, STAGES[stageIdx].spawnInterval - Math.floor(score/120)*4);
+    if(++spawnTimer>=si){spawnCreature();spawnTimer=0;}
+    // spawn powerups
+    if(++powerupSpawnTimer>=POWERUP_SPAWN_INTERVAL){spawnPowerup();powerupSpawnTimer=0;}
+
+    // update creatures
+    const sf=activeEffect==='freeze'?0.25:1;
+    for(let i=creatures.length-1;i>=0;i--){
+      const c=creatures[i];
+      if(c.captured){ c.captureT++; if(c.captureT>45)creatures.splice(i,1); continue; }
+      c.x+=c.dx*sf; c.y+=c.dy*sf;
+      if(c.x<-150||c.x>W+150) creatures.splice(i,1);
+    }
+    creatures.forEach(c=>drawCreatureOnScreen(c));
+
+    // update + draw powerups
+    for(let pi=powerups.length-1;pi>=0;pi--){
+      const pu=powerups[pi];
+      pu.x+=pu.dx+Math.sin(gameTime*0.022+pu.phase)*0.4;
+      pu.y+=pu.dy;
+      if(!pu.active||pu.y<-60){powerups.splice(pi,1);continue;}
+      drawPowerup(pu);
+    }
+
+    // update nets
+    for(let i=nets.length-1;i>=0;i--){
+      const n=nets[i];
+      if(n.active){
+        n.x+=n.dx; n.y+=n.dy;
+        n.r=Math.min(n.maxR,n.r+1.7);
+        n.rot+=0.06; n.age++;
+        if(n.age>CFG.netLifetime||n.y<-100||n.x<-100||n.x>W+100) n.active=false;
+      }
+      if(n.active) drawNet(n);
+      else { n.age+=3; if(n.age>CFG.netLifetime+8) nets.splice(i,1); }
+    }
+
+    checkCollisions();
+
+    // particles
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.x+=p.dx; p.y+=p.dy; p.dy+=0.11; p.life-=p.decay;
+      if(p.life<=0) particles.splice(i,1);
+    }
+    drawParticles();
+
+    // popups
+    for(let i=popups.length-1;i>=0;i--){
+      const p=popups[i]; p.y+=p.dy; p.life-=0.021;
+      if(p.life<=0) popups.splice(i,1);
+    }
+
+    drawCannon();
+    drawHUD();
+
+  } else if(screen==='stageClear'){
+    creatures.forEach(c=>drawCreatureOnScreen(c));
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.x+=p.dx;p.y+=p.dy;p.dy+=0.1;p.life-=p.decay;
+      if(p.life<=0)particles.splice(i,1);
+    }
+    drawParticles();
+    drawCannon();
+    drawStageClearScreen();
+  }
+
+  if(screen==='pokédex'){
+    drawPokédex();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INPUT HANDLERS
+   ═══════════════════════════════════════════════════════════════════════════ */
+function aimAt(cx,cy){
+  let a=Math.atan2(cy-cannon.y,cx-cannon.x);
+  a=Math.max(-Math.PI+0.14,Math.min(-0.14,a));
+  cannon.angle=a;
+}
+
+canvas.addEventListener('mousemove',e=>{
+  if(screen==='playing'||screen==='intro') aimAt(e.clientX,e.clientY);
+});
+
+canvas.addEventListener('click',e=>{
+  const {clientX:cx,clientY:cy}=e;
+
+  if(screen==='pokédex'){
+    // close button
+    if(dexCloseArea&&cx>=dexCloseArea.x&&cy>=dexCloseArea.y&&cx<=dexCloseArea.x+dexCloseArea.w&&cy<=dexCloseArea.y+dexCloseArea.h){
+      screen='playing'; stageClearTimer=0; return;
+    }
+    // filter tabs
+    for(const btn of dexFilterBtns){
+      if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
+        dexFilter=btn.filter; dexScroll=0; return;
+      }
+    }
+    return;
+  }
+
+  if(screen==='stageClear'){
+    const btn=ctx._stageClearBtn;
+    if(btn&&stageClearTimer>60&&cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
+      stageClearTimer=0;
+      if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
+      else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
+      return;
+    }
+    return;
+  }
+
+  if(screen==='intro'){
+    if(introTimer>60){ screen='playing'; return; }
+  }
+
+  if(screen==='playing'){
+    aimAt(cx,cy); fireNet();
+  }
+});
+
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const t=e.touches[0];
+  if(screen==='playing'){aimAt(t.clientX,t.clientY);fireNet();}
+  if(screen==='intro'&&introTimer>60) screen='playing';
+},{passive:false});
+
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(screen==='playing') aimAt(e.touches[0].clientX,e.touches[0].clientY);
+  if(screen==='pokédex'){
+    // scroll dex
+  }
+},{passive:false});
+
+canvas.addEventListener('wheel',e=>{
+  if(screen==='pokédex'){e.preventDefault();dexScroll=Math.max(0,Math.min(dexMaxScroll,dexScroll+e.deltaY*.6));}
+},{passive:false});
+
+window.addEventListener('keydown',e=>{
+  if(e.code==='KeyP'||e.code==='Escape'){
+    e.preventDefault();
+    screen=screen==='pokédex'?'playing':'pokédex';
+    if(screen==='pokédex') dexScroll=0;
+  }
+  if(screen==='playing'){
+    if(e.code==='Space'||e.code==='Enter'){e.preventDefault();fireNet();}
+    if(e.code==='ArrowLeft') cannon.angle=Math.max(-Math.PI+0.14,cannon.angle-0.07);
+    if(e.code==='ArrowRight') cannon.angle=Math.min(-0.14,cannon.angle+0.07);
+  }
+  if(screen==='intro'&&e.code==='Space'&&introTimer>60) screen='playing';
+  if(screen==='stageClear'){
+    const btn=ctx._stageClearBtn;
+    if((e.code==='Space'||e.code==='Enter')&&btn&&stageClearTimer>60){
+      stageClearTimer=0;
+      if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
+      else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
+    }
+  }
+});
+
+document.getElementById('dex-btn').addEventListener('click',()=>{
+  screen=screen==='pokédex'?'playing':'pokédex';
+  if(screen==='pokédex') dexScroll=0;
+});
+
+window.addEventListener('resize',()=>{
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+  cannon.x=W/2; cannon.y=H-58;
+  bubbles.forEach(b=>{if(b.x>W)b.x=Math.random()*W;});
+  seaweeds.forEach(sw=>{if(sw.x>W)sw.x=Math.random()*W;});
+  corals.forEach(co=>{if(co.x>W)co.x=Math.random()*W;});
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════════════════ */
+loadCollection();
+loadHighScore();
+spawnCreature(); spawnCreature(); spawnCreature();
+loop();
+</script>
+</body>
+</html>
