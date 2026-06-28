@@ -932,6 +932,7 @@ function gotoStage(idx){
   stageSpecies=new Set();
   creatures.length=0; nets.length=0; powerups.length=0;
   combo=1; comboTimer=0; activeEffect=null; effectTimer=0; powerupSpawnTimer=0;
+  if(_stageClearTimeout){clearTimeout(_stageClearTimeout);_stageClearTimeout=null;}
   bgFrom={...bgTo};
   bgTo={...STAGES[stageIdx].bg};
   bgT=0;
@@ -1298,9 +1299,9 @@ function checkCollisions(){
           color:isNew?'#FFD700':RARITY_COLOR[cr.rarity],
           life:1, size:34, dy:-2.2,
         });
-        // check stage challenge
-        if(STAGES[stageIdx].challenge.check({stageCatches,stageSpecies})){
-          setTimeout(()=>{screen='stageClear';},600);
+        // check stage challenge (guard against multiple queued timeouts)
+        if(!_stageClearTimeout && STAGES[stageIdx].challenge.check({stageCatches,stageSpecies})){
+          _stageClearTimeout=setTimeout(()=>{screen='stageClear';_stageClearTimeout=null;},600);
         }
       }
     }
@@ -1450,6 +1451,7 @@ function drawIntroScreen(){
    STAGE CLEAR SCREEN
    ═══════════════════════════════════════════════════════════════════════════ */
 let stageClearTimer=0;
+let _stageClearTimeout=null;
 function drawStageClearScreen(){
   stageClearTimer++;
   ctx.save();
