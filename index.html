@@ -1301,37 +1301,37 @@ const ALL_STAGES = [
   {
     id:1, name:'Sunlight Zone', type:'cannon', zone:1,
     bg:ZONES[0].bg, pool:ZONES[0].pool,
-    speedMult:0.75, spawnInterval:85, netQuota:25,
-    challenge:{ desc:'Catch 10 creatures! (25 nets)', label:'Catch 10', check:s=>s.stageCatches>=10, progress:s=>({cur:s.stageCatches,max:10}) },
-    intro:'Sunlight Zone! (0–200m)\nFire the net cannon to catch colorful sea life!\nCatch 10 creatures — 25 nets to use!',
+    speedMult:0.75, spawnInterval:85, netQuota:15,
+    challenge:{ desc:'Catch 10 creatures! (15 nets)', label:'Catch 10', check:s=>s.stageCatches>=10, progress:s=>({cur:s.stageCatches,max:10}) },
+    intro:'Sunlight Zone! (0–200m)\nFire the net cannon to catch colorful sea life!\nCatch 10 creatures — 15 nets to use!',
   },
   {
     id:2, name:'Twilight Zone', type:'cannon', zone:2,
     bg:ZONES[1].bg, pool:ZONES[1].pool,
-    speedMult:0.95, spawnInterval:76, netQuota:30,
-    challenge:{ desc:'Catch 18 & 4 species! (30 nets)', label:'18 & 4 spc', check:s=>s.stageCatches>=18&&s.stageSpecies.size>=4, progress:s=>({cur:Math.min(s.stageCatches,18),max:18,sub:`Species: ${s.stageSpecies.size}/4`}) },
-    intro:'Twilight Zone! (200–1000m)\nLight fades — creatures get faster!\nCatch 18 & 4 species — 30 nets!',
+    speedMult:0.95, spawnInterval:76, netQuota:23,
+    challenge:{ desc:'Catch 18 & 4 species! (23 nets)', label:'18 & 4 spc', check:s=>s.stageCatches>=18&&s.stageSpecies.size>=4, progress:s=>({cur:Math.min(s.stageCatches,18),max:18,sub:`Species: ${s.stageSpecies.size}/4`}) },
+    intro:'Twilight Zone! (200–1000m)\nLight fades — creatures get faster!\nCatch 18 & 4 species — 23 nets!',
   },
   {
     id:3, name:'Midnight Zone', type:'cannon', zone:3,
     bg:ZONES[2].bg, pool:ZONES[2].pool,
-    speedMult:1.15, spawnInterval:66, netQuota:35,
-    challenge:{ desc:'Catch 25 + Hammerhead! (35 nets)', label:'25 & Hammer', check:s=>s.stageCatches>=25&&s.stageSpecies.has('hammerheadShark'), progress:s=>({cur:Math.min(s.stageCatches,25),max:25,sub:s.stageSpecies.has('hammerheadShark')?'✅ Hammerhead!':'🦈 Need Hammerhead'}) },
-    intro:'Midnight Zone! (1000–4000m)\nTotal darkness — aim carefully!\nCatch 25 + a Hammerhead — 35 nets!',
+    speedMult:1.15, spawnInterval:66, netQuota:30,
+    challenge:{ desc:'Catch 25 + Hammerhead! (30 nets)', label:'25 & Hammer', check:s=>s.stageCatches>=25&&s.stageSpecies.has('hammerheadShark'), progress:s=>({cur:Math.min(s.stageCatches,25),max:25,sub:s.stageSpecies.has('hammerheadShark')?'✅ Hammerhead!':'🦈 Need Hammerhead'}) },
+    intro:'Midnight Zone! (1000–4000m)\nTotal darkness — aim carefully!\nCatch 25 + a Hammerhead — 30 nets!',
   },
   {
     id:4, name:'The Abyss', type:'cannon', zone:4,
     bg:ZONES[3].bg, pool:ZONES[3].pool,
-    speedMult:1.35, spawnInterval:56, netQuota:40,
-    challenge:{ desc:'Catch 30 + Anglerfish & Dumbo! (40 nets)', label:'30 & duo', check:s=>s.stageCatches>=30&&s.stageSpecies.has('anglerfish')&&s.stageSpecies.has('dumboOctopus'), progress:s=>({cur:Math.min(s.stageCatches,30),max:30,sub:`🐟${s.stageSpecies.has('anglerfish')?'✅':'❌'} 🐙${s.stageSpecies.has('dumboOctopus')?'✅':'❌'}`}) },
-    intro:'The Abyss! (4000–6000m)\nCrushing pressure — weird creatures!\nCatch 30 + Anglerfish & Dumbo — 40 nets!',
+    speedMult:1.35, spawnInterval:56, netQuota:35,
+    challenge:{ desc:'Catch 30 + Anglerfish & Dumbo! (35 nets)', label:'30 & duo', check:s=>s.stageCatches>=30&&s.stageSpecies.has('anglerfish')&&s.stageSpecies.has('dumboOctopus'), progress:s=>({cur:Math.min(s.stageCatches,30),max:30,sub:`🐟${s.stageSpecies.has('anglerfish')?'✅':'❌'} 🐙${s.stageSpecies.has('dumboOctopus')?'✅':'❌'}`}) },
+    intro:'The Abyss! (4000–6000m)\nCrushing pressure — weird creatures!\nCatch 30 + Anglerfish & Dumbo — 35 nets!',
   },
   {
     id:5, name:'Hadal Trenches', type:'cannon', zone:5,
     bg:ZONES[4].bg, pool:ZONES[4].pool,
-    speedMult:1.55, spawnInterval:48, netQuota:45,
-    challenge:{ desc:'Catch a Legendary! (45 nets)', label:'1 Legendary!', check:s=>s.stageSpecies.has('blueWhale')||s.stageSpecies.has('giantSquid'), progress:s=>{const g=s.stageSpecies.has('blueWhale')||s.stageSpecies.has('giantSquid');return{cur:g?1:0,max:1,sub:g?'🏆 Legendary!':'Hunt the Legendary...'};} },
-    intro:'Hadal Trenches! (6000m+)\nThe deepest place on Earth!\nCatch a Legendary — 45 nets — become Ocean Master!',
+    speedMult:1.55, spawnInterval:48, netQuota:20,
+    challenge:{ desc:'Catch a Legendary! (20 nets)', label:'1 Legendary!', check:s=>s.stageSpecies.has('blueWhale')||s.stageSpecies.has('giantSquid'), progress:s=>{const g=s.stageSpecies.has('blueWhale')||s.stageSpecies.has('giantSquid');return{cur:g?1:0,max:1,sub:g?'🏆 Legendary!':'Hunt the Legendary...'};} },
+    intro:'Hadal Trenches! (6000m+)\nThe deepest place on Earth!\nCatch a Legendary — 20 nets — become Ocean Master!',
   },
   // ── FISHING STAGES ─────────────────────────────────────────────────────────
   {
@@ -1380,7 +1380,7 @@ const ALL_STAGES = [
     bg:ZONES[0].bg, pool:ZONES[0].pool,
     speedMult:0.75, spawnInterval:80, catchTarget:8, lightRange:200, armRange:120, depth:'0–200m',
     challenge:{ desc:'Collect 8 specimens!', label:'Collect 8', check:s=>s.stageCatches>=8, progress:s=>({cur:s.stageCatches,max:8}) },
-    intro:'Sunlight Zone — Submersible!\nMove the sub UP ▲ / DOWN ▼.\nExtend the robot ARM to grab creatures!\nCollect 8 specimens for science!',
+    intro:'Sunlight Zone — Submersible!\nUse ◄ ► to steer, ▲ ▼ for depth.\nExtend the ARM to grab creatures!\nCollect 8 specimens for science!',
   },
   {
     id:22, name:'Twilight Zone', type:'submersible', zone:2,
@@ -1435,14 +1435,20 @@ function loadHighScore(){
   try{highScore=parseInt(localStorage.getItem('oceanNetCatch_hs')||'0');}catch(e){}
 }
 function loadLeaderboard(){
-  try{leaderboard=JSON.parse(localStorage.getItem(LB_KEY)||'[]');}catch(e){leaderboard=[];}
+  ['cannon','fishing','submersible'].forEach(m=>{
+    try{leaderboards[m]=JSON.parse(localStorage.getItem(LB_KEYS[m])||'[]');}catch(e){leaderboards[m]=[];}
+  });
 }
 function saveToLeaderboard(name,sc){
-  const modeLabel={cannon:'🎯 Cannon',fishing:'🎣 Fishing',submersible:'🔬 Sub'}[gameMode]||gameMode;
-  leaderboard.push({name:name||'Anonymous',score:sc,mode:modeLabel,date:new Date().toLocaleDateString()});
-  leaderboard.sort((a,b)=>b.score-a.score);
-  leaderboard=leaderboard.slice(0,15);
-  try{localStorage.setItem(LB_KEY,JSON.stringify(leaderboard));}catch(e){}
+  const m=gameMode||'cannon';
+  leaderboards[m].push({name:name||'Anonymous',score:sc,date:new Date().toLocaleDateString()});
+  leaderboards[m].sort((a,b)=>b.score-a.score);
+  leaderboards[m]=leaderboards[m].slice(0,15);
+  try{localStorage.setItem(LB_KEYS[m],JSON.stringify(leaderboards[m]));}catch(e){}
+}
+function clearLeaderboard(m){
+  leaderboards[m]=[];
+  try{localStorage.removeItem(LB_KEYS[m]);}catch(e){}
 }
 
 /* ─── Rarity colours ─────────────────────────────────────────────────────── */
@@ -1503,7 +1509,7 @@ const cannon={x:W/2, y:H-58, angle:-Math.PI/2, recoil:0};
 // pokédex UI state
 let dexScroll=0, dexFilter='all', dexMaxScroll=0;
 // hit-test areas populated each frame
-let dexFilterBtns=[], dexCards=[], dexCloseArea=null;
+let dexFilterBtns=[], dexCards=[], dexCloseArea=null, dexResetBtn=null;
 let _dexTouchY=0;
 
 let gameTime=0;
@@ -1542,8 +1548,9 @@ const SUB={
 };
 
 /* ─── Leaderboard ────────────────────────────────────────────────────────── */
-const LB_KEY='oceanNetCatch_lb_v1';
-let leaderboard=[];
+const LB_KEYS={cannon:'oceanNetCatch_lb_cannon_v1',fishing:'oceanNetCatch_lb_fishing_v1',submersible:'oceanNetCatch_lb_sub_v1'};
+const leaderboards={cannon:[],fishing:[],submersible:[]};
+let lbActiveMode='cannon';
 let lbFromScreen='playing';
 
 /* ─── Combo + Power-ups ─────────────────────────────────────────────────── */
@@ -2365,9 +2372,9 @@ function drawPokédex(){
   // caught count
   const caughtN=CREATURES.filter(cr=>collection[cr.id].count>0).length;
   ctx.fillStyle='#FFD700';
-  ctx.font='bold 18px Comic Sans MS,cursive';
+  ctx.font='bold 16px Comic Sans MS,cursive';
   ctx.textAlign='right';
-  ctx.fillText(`${caughtN} / ${CREATURES.length} Caught`,panX+panW-60,panY+34);
+  ctx.fillText(`${caughtN}/${CREATURES.length} Caught`,panX+panW-60,panY+34);
   // close button
   const closeX=panX+panW-38, closeY=panY+10, closeR=16;
   ctx.fillStyle='rgba(255,80,80,.8)';
@@ -2392,8 +2399,19 @@ function drawPokédex(){
     dexFilterBtns.push({x:tx,y:ty,w:tabW,h:tabH,filter:f});
   });
 
-  // grid area
-  const gridY=tabY+tabH+10, gridH=panH-(gridY-panY)-10;
+  // Reset Dex button (bottom strip of panel)
+  const resetDexH2=30, resetDexY2=panY+panH-resetDexH2-4;
+  const resetDexX2=panX+CARD_PAD, resetDexW2=panW-CARD_PAD*2;
+  ctx.fillStyle='rgba(140,20,20,.8)';
+  ctx.beginPath();ctx.roundRect(resetDexX2,resetDexY2,resetDexW2,resetDexH2,8);ctx.fill();
+  ctx.strokeStyle='rgba(255,70,70,.35)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(resetDexX2,resetDexY2,resetDexW2,resetDexH2,8);ctx.stroke();
+  ctx.fillStyle='rgba(255,180,180,.9)';ctx.font='bold 12px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('🗑️ Reset Entire Dex',panX+panW/2,resetDexY2+resetDexH2/2+4);
+  dexResetBtn={x:resetDexX2,y:resetDexY2,w:resetDexW2,h:resetDexH2};
+
+  // grid area (leave room for reset button at bottom)
+  const gridY=tabY+tabH+10, gridH=panH-(gridY-panY)-resetDexH2-12;
   ctx.save();
   ctx.beginPath();ctx.rect(panX,gridY,panW,gridH);ctx.clip();
 
@@ -2420,16 +2438,19 @@ function drawPokédex(){
     ctx.lineWidth=caught?2:1;
     ctx.beginPath();ctx.roundRect(cx,cy,cw,ch,10);ctx.stroke();
 
-    // creature preview area
+    // creature preview area — draw in correct color (caught) or dim silhouette (not caught)
     const previewH=90, previewY=cy+8;
     ctx.save();
     ctx.beginPath();ctx.rect(cx+4,previewY,cw-8,previewH);ctx.clip();
     ctx.translate(cx+cw/2, previewY+previewH/2);
     ctx.scale(0.65,0.65);
-    if(!caught){
-      ctx.filter='grayscale(100%) brightness(10%)';ctx.globalAlpha=0.5;
+    if(caught){
+      cr.draw(ctx); // full color including hue-rotate variants
+    } else {
+      // draw at very low opacity so color variant filter inside cr.draw doesn't conflict
+      ctx.globalAlpha=0.12;
+      cr.draw(ctx);
     }
-    cr.draw(ctx);
     ctx.restore();
 
     // rarity badge
@@ -2535,66 +2556,87 @@ function drawStageFailScreen(){
 /* ═══════════════════════════════════════════════════════════════════════════
    LEADERBOARD SCREEN
    ═══════════════════════════════════════════════════════════════════════════ */
-let _lbBackBtn=null;
+let _lbBackBtn=null, _lbTabBtns=[], _lbClearBtn=null;
 function drawLeaderboard(){
   ctx.save();
   ctx.fillStyle='rgba(0,5,20,.96)';ctx.fillRect(0,0,W,H);
   // header
   ctx.fillStyle='#FFD700';
-  ctx.shadowColor='rgba(255,215,0,.7)';ctx.shadowBlur=20;
-  ctx.font='bold 46px Comic Sans MS,cursive';
+  ctx.shadowColor='rgba(255,215,0,.7)';ctx.shadowBlur=18;
+  ctx.font='bold 38px Comic Sans MS,cursive';
   ctx.textAlign='center';
-  ctx.fillText('🏆 Leaderboard',W/2,70);
+  ctx.fillText('🏆 Leaderboard',W/2,52);
   ctx.shadowBlur=0;
-  if(leaderboard.length===0){
-    ctx.fillStyle='rgba(150,180,220,.7)';
-    ctx.font='22px Comic Sans MS,cursive';
-    ctx.fillText('No scores yet — be the first!',W/2,H/2);
+
+  // mode tabs
+  const tabs=[{m:'cannon',icon:'🎯',label:'Cannon'},{m:'fishing',icon:'🎣',label:'Fishing'},{m:'submersible',icon:'🔬',label:'Sub'}];
+  const tabW=(W-32)/3, tabH=38, tabY=66, tabGap=4;
+  _lbTabBtns=[];
+  tabs.forEach((t,i)=>{
+    const tx=8+i*(tabW+tabGap);
+    const active=lbActiveMode===t.m;
+    const col={cannon:'#FF6B35',fishing:'#00BCD4',submersible:'#AB47BC'}[t.m];
+    ctx.fillStyle=active?col:'rgba(255,255,255,.08)';
+    ctx.beginPath();ctx.roundRect(tx,tabY,tabW,tabH,8);ctx.fill();
+    if(active){ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(tx,tabY,tabW,tabH,8);ctx.stroke();}
+    ctx.fillStyle=active?'#FFF':'rgba(200,220,255,.6)';
+    ctx.font=`bold ${active?15:13}px Comic Sans MS,cursive`;
+    ctx.textAlign='center';
+    ctx.fillText(`${t.icon} ${t.label}`,tx+tabW/2,tabY+tabH/2+5);
+    _lbTabBtns.push({x:tx,y:tabY,w:tabW,h:tabH,m:t.m});
+  });
+
+  // entries for active mode
+  const entries=leaderboards[lbActiveMode]||[];
+  const startY=118, rowH=48, colW=Math.min(500,W*.9), lx=(W-colW)/2;
+  if(entries.length===0){
+    ctx.fillStyle='rgba(150,180,220,.6)';
+    ctx.font='20px Comic Sans MS,cursive';ctx.textAlign='center';
+    ctx.fillText('No scores yet — be the first!',W/2,startY+80);
   } else {
-    const rowH=52, startY=110, colW=Math.min(520,W*.85), lx=(W-colW)/2;
-    leaderboard.forEach((entry,i)=>{
+    entries.forEach((entry,i)=>{
+      if(startY+i*rowH>H-120) return;
       const ry=startY+i*rowH;
-      // row bg
       const gold=i===0,silver=i===1,bronze=i===2;
-      ctx.fillStyle=gold?'rgba(255,215,0,.13)':silver?'rgba(192,192,192,.1)':bronze?'rgba(205,127,50,.1)':'rgba(255,255,255,.04)';
+      ctx.fillStyle=gold?'rgba(255,215,0,.13)':silver?'rgba(192,192,192,.09)':bronze?'rgba(205,127,50,.09)':'rgba(255,255,255,.04)';
       ctx.beginPath();ctx.roundRect(lx,ry,colW,rowH-4,8);ctx.fill();
-      ctx.strokeStyle=gold?'#FFD700':silver?'#C0C0C0':bronze?'#CD7F32':'rgba(100,150,200,.2)';
+      ctx.strokeStyle=gold?'#FFD700':silver?'#C0C0C0':bronze?'#CD7F32':'rgba(100,150,200,.18)';
       ctx.lineWidth=gold||silver||bronze?2:1;
       ctx.beginPath();ctx.roundRect(lx,ry,colW,rowH-4,8);ctx.stroke();
-      // rank medal
+      // rank
       const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
-      ctx.font=`bold ${i<3?26:20}px Comic Sans MS,cursive`;
+      ctx.font=`bold ${i<3?24:18}px Comic Sans MS,cursive`;
       ctx.fillStyle=gold?'#FFD700':silver?'#C0C0C0':bronze?'#CD7F32':'#aaa';
-      ctx.textAlign='left';
-      ctx.fillText(medal,lx+12,ry+rowH/2+8);
+      ctx.textAlign='left';ctx.fillText(medal,lx+10,ry+rowH/2+7);
       // name
-      ctx.fillStyle='#FFF';
-      ctx.font='bold 18px Comic Sans MS,cursive';
-      ctx.textAlign='left';
-      ctx.fillText(entry.name,lx+70,ry+rowH/2+2);
-      // mode label
-      if(entry.mode){
-        ctx.fillStyle='rgba(100,220,255,.7)';ctx.font='11px Comic Sans MS,cursive';
-        ctx.fillText(entry.mode,lx+70,ry+rowH/2+16);
-      }
+      ctx.fillStyle='#FFF';ctx.font='bold 17px Comic Sans MS,cursive';
+      ctx.fillText(entry.name,lx+64,ry+rowH/2+7);
       // score
-      ctx.fillStyle='#7ee8ff';
-      ctx.font='bold 20px Comic Sans MS,cursive';
-      ctx.textAlign='right';
-      ctx.fillText(entry.score,lx+colW-80,ry+rowH/2+8);
+      ctx.fillStyle='#7ee8ff';ctx.font='bold 20px Comic Sans MS,cursive';ctx.textAlign='right';
+      ctx.fillText(entry.score,lx+colW-70,ry+rowH/2+7);
       // date
-      ctx.fillStyle='rgba(150,180,220,.6)';
-      ctx.font='12px Comic Sans MS,cursive';
-      ctx.fillText(entry.date,lx+colW-8,ry+rowH/2+8);
+      ctx.fillStyle='rgba(150,180,220,.55)';ctx.font='11px Comic Sans MS,cursive';
+      ctx.fillText(entry.date,lx+colW-8,ry+rowH/2+7);
     });
   }
-  // back button
-  const bW=200,bH=50,bX=W/2-bW/2,bY=H-90;
+
+  // bottom buttons
+  const bY=H-74;
+  // Back
   ctx.fillStyle='rgba(2,136,209,.85)';
-  ctx.beginPath();ctx.roundRect(bX,bY,bW,bH,25);ctx.fill();
-  ctx.fillStyle='#FFF';ctx.font='bold 22px Comic Sans MS,cursive';ctx.textAlign='center';
-  ctx.fillText('← Back',W/2,bY+34);
-  _lbBackBtn={x:bX,y:bY,w:bW,h:bH};
+  ctx.beginPath();ctx.roundRect(8,bY,W/2-14,52,14);ctx.fill();
+  ctx.fillStyle='#FFF';ctx.font='bold 18px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('← Back',W/4,bY+33);
+  _lbBackBtn={x:8,y:bY,w:W/2-14,h:52};
+  // Clear Scores
+  ctx.fillStyle='rgba(180,30,30,.8)';
+  ctx.beginPath();ctx.roundRect(W/2+6,bY,W/2-14,52,14);ctx.fill();
+  ctx.strokeStyle='rgba(255,80,80,.5)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(W/2+6,bY,W/2-14,52,14);ctx.stroke();
+  ctx.fillStyle='#FFF';ctx.font='bold 14px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('🗑️ Clear Scores',W*3/4+3,bY+33);
+  _lbClearBtn={x:W/2+6,y:bY,w:W/2-14,h:52};
+
   ctx.restore();
 }
 
@@ -3405,14 +3447,24 @@ function handleTap(cx,cy){
     if(dexCloseArea&&cx>=dexCloseArea.x&&cy>=dexCloseArea.y&&cx<=dexCloseArea.x+dexCloseArea.w&&cy<=dexCloseArea.y+dexCloseArea.h){
       screen=STAGES[stageIdx].type==='fishing'?'fishing':STAGES[stageIdx].type==='submersible'?'sub':'playing'; return;
     }
+    if(dexResetBtn&&cx>=dexResetBtn.x&&cy>=dexResetBtn.y&&cx<=dexResetBtn.x+dexResetBtn.w&&cy<=dexResetBtn.y+dexResetBtn.h){
+      if(window.confirm('Reset your entire Ocean Dex? All caught records will be lost.')){
+        CREATURES.forEach(cr=>{collection[cr.id]={count:0,firstStage:null};});
+        saveCollection();
+      }
+      return;
+    }
     for(const btn of dexFilterBtns){
       if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){dexFilter=btn.filter;dexScroll=0;return;}
     }
     return;
   }
   if(screen==='leaderboard'){
-    if(_lbBackBtn&&cx>=_lbBackBtn.x&&cy>=_lbBackBtn.y&&cx<=_lbBackBtn.x+_lbBackBtn.w&&cy<=_lbBackBtn.y+_lbBackBtn.h){
-      screen='menu';
+    for(const t of _lbTabBtns){ if(cx>=t.x&&cy>=t.y&&cx<=t.x+t.w&&cy<=t.y+t.h){lbActiveMode=t.m;return;} }
+    if(_lbBackBtn&&cx>=_lbBackBtn.x&&cy>=_lbBackBtn.y&&cx<=_lbBackBtn.x+_lbBackBtn.w&&cy<=_lbBackBtn.y+_lbBackBtn.h){screen='menu';return;}
+    if(_lbClearBtn&&cx>=_lbClearBtn.x&&cy>=_lbClearBtn.y&&cx<=_lbClearBtn.x+_lbClearBtn.w&&cy<=_lbClearBtn.y+_lbClearBtn.h){
+      if(window.confirm(`Clear all ${lbActiveMode} scores? This cannot be undone.`)){clearLeaderboard(lbActiveMode);}
+      return;
     }
     return;
   }
@@ -3464,6 +3516,13 @@ canvas.addEventListener('touchstart',e=>{
   if(screen==='pokédex'){
     if(dexCloseArea&&cx>=dexCloseArea.x&&cy>=dexCloseArea.y&&cx<=dexCloseArea.x+dexCloseArea.w&&cy<=dexCloseArea.y+dexCloseArea.h){
       screen=STAGES[stageIdx].type==='fishing'?'fishing':STAGES[stageIdx].type==='submersible'?'sub':'playing'; return;
+    }
+    if(dexResetBtn&&cx>=dexResetBtn.x&&cy>=dexResetBtn.y&&cx<=dexResetBtn.x+dexResetBtn.w&&cy<=dexResetBtn.y+dexResetBtn.h){
+      if(window.confirm('Reset your entire Ocean Dex? All caught records will be lost.')){
+        CREATURES.forEach(cr=>{collection[cr.id]={count:0,firstStage:null};});
+        saveCollection();
+      }
+      return;
     }
     for(const btn of dexFilterBtns){
       if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){dexFilter=btn.filter;dexScroll=0;return;}
@@ -3564,6 +3623,7 @@ document.getElementById('dex-btn').addEventListener('click',()=>{
 
 document.getElementById('lb-btn').addEventListener('click',()=>{
   lbFromScreen=screen;
+  if(gameMode) lbActiveMode=gameMode;
   screen='leaderboard';
 });
 
@@ -3571,6 +3631,7 @@ document.getElementById('lb-btn').addEventListener('click',()=>{
 function submitName(name){
   document.getElementById('name-modal').style.display='none';
   saveToLeaderboard(name.trim(),score);
+  lbActiveMode=gameMode||'cannon'; // show that mode's leaderboard
   score=0; totalCatches=0;
   screen='leaderboard';
 }
@@ -3579,6 +3640,7 @@ document.getElementById('nm-submit').addEventListener('click',()=>{
 });
 document.getElementById('nm-skip').addEventListener('click',()=>{
   document.getElementById('name-modal').style.display='none';
+  lbActiveMode=gameMode||'cannon';
   score=0; totalCatches=0;
   screen='leaderboard';
 });
