@@ -1157,6 +1157,47 @@ function drawGoldenSeahorse(c){c.save();c.filter='hue-rotate(200deg) saturate(1.
 function drawPinkJellyfish(c){c.save();c.filter='hue-rotate(120deg) saturate(1.3)';drawJellyfish(c);c.restore();}
 function drawGoldLobster(c){c.save();c.filter='hue-rotate(50deg) saturate(1.5)';drawLobster(c);c.restore();}
 function drawBlueCrab(c){c.save();c.filter='hue-rotate(210deg) saturate(1.2)';drawCrab(c);c.restore();}
+// Clownfish variants
+function drawGoldenClownfish(c){c.save();c.filter='hue-rotate(165deg) saturate(1.3)';drawClownfish(c);c.restore();}
+function drawPinkClownfish(c){c.save();c.filter='hue-rotate(320deg) saturate(1.2)';drawClownfish(c);c.restore();}
+function drawPurpleClownfish(c){c.save();c.filter='hue-rotate(270deg) saturate(1.1)';drawClownfish(c);c.restore();}
+// Angelfish variants
+function drawRedAngelfish(c){c.save();c.filter='hue-rotate(-40deg) saturate(1.4)';drawAngelfish(c);c.restore();}
+function drawTealAngelfish(c){c.save();c.filter='hue-rotate(150deg) saturate(1.2)';drawAngelfish(c);c.restore();}
+function drawGoldAngelfish(c){c.save();c.filter='hue-rotate(200deg) saturate(1.3)';drawAngelfish(c);c.restore();}
+// Jellyfish variants
+function drawGoldJellyfish(c){c.save();c.filter='hue-rotate(200deg) saturate(1.5)';drawJellyfish(c);c.restore();}
+function drawGreenJellyfish(c){c.save();c.filter='hue-rotate(90deg) saturate(1.3)';drawJellyfish(c);c.restore();}
+function drawTealJellyfish(c){c.save();c.filter='hue-rotate(140deg) saturate(1.2)';drawJellyfish(c);c.restore();}
+// Seahorse variants
+function drawBlueSeahorse(c){c.save();c.filter='hue-rotate(200deg) saturate(1.3)';drawSeahorse(c);c.restore();}
+function drawPinkSeahorse(c){c.save();c.filter='hue-rotate(310deg) saturate(1.2)';drawSeahorse(c);c.restore();}
+function drawRedSeahorse(c){c.save();c.filter='hue-rotate(-20deg) saturate(1.4)';drawSeahorse(c);c.restore();}
+// Pufferfish variants
+function drawBluePufferfish(c){c.save();c.filter='hue-rotate(220deg) saturate(1.3)';drawPufferfish(c);c.restore();}
+function drawPinkPufferfish(c){c.save();c.filter='hue-rotate(310deg) saturate(1.2)';drawPufferfish(c);c.restore();}
+function drawPurplePufferfish(c){c.save();c.filter='hue-rotate(270deg) saturate(1.1)';drawPufferfish(c);c.restore();}
+function drawOrangePufferfish(c){c.save();c.filter='hue-rotate(20deg) saturate(1.3)';drawPufferfish(c);c.restore();}
+// Shark variants
+function drawBlueShark(c){c.save();c.filter='hue-rotate(210deg) saturate(1.3)';drawShark(c);c.restore();}
+function drawWhiteShark(c){c.save();c.filter='grayscale(40%) brightness(1.4)';drawShark(c);c.restore();}
+function drawGoldShark(c){c.save();c.filter='hue-rotate(185deg) saturate(1.6)';drawShark(c);c.restore();}
+function drawRedShark(c){c.save();c.filter='hue-rotate(-20deg) saturate(1.4)';drawShark(c);c.restore();}
+// Octopus variants
+function drawBlueOctopus(c){c.save();c.filter='hue-rotate(210deg) saturate(1.3)';drawOctopus(c);c.restore();}
+function drawPinkOctopus(c){c.save();c.filter='hue-rotate(310deg) saturate(1.2)';drawOctopus(c);c.restore();}
+function drawRedOctopus(c){c.save();c.filter='hue-rotate(-30deg) saturate(1.4)';drawOctopus(c);c.restore();}
+// Crab variants
+function drawGoldenCrab(c){c.save();c.filter='hue-rotate(50deg) saturate(1.4)';drawCrab(c);c.restore();}
+function drawGreenCrab(c){c.save();c.filter='hue-rotate(100deg) saturate(1.2)';drawCrab(c);c.restore();}
+function drawPurpleCrab(c){c.save();c.filter='hue-rotate(280deg) saturate(1.1)';drawCrab(c);c.restore();}
+// Starfish variants
+function drawBlueStarfish(c){c.save();c.filter='hue-rotate(210deg) saturate(1.2)';drawStarfish(c);c.restore();}
+function drawGoldStarfish(c){c.save();c.filter='hue-rotate(170deg) saturate(1.5)';drawStarfish(c);c.restore();}
+function drawPinkStarfish(c){c.save();c.filter='hue-rotate(330deg) saturate(1.2)';drawStarfish(c);c.restore();}
+// Lobster variants
+function drawBlueLobster(c){c.save();c.filter='hue-rotate(210deg) saturate(1.2)';drawLobster(c);c.restore();}
+function drawPinkLobster(c){c.save();c.filter='hue-rotate(310deg) saturate(1.1)';drawLobster(c);c.restore();}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CREATURE REGISTRY
@@ -1199,6 +1240,47 @@ const CREATURES = [
   { id:'pinkJellyfish',   name:'Pink Jellyfish',    rarity:'epic',      pts:52,  baseSpeed:0.8, scale:0.75, noFlip:true,  draw:drawPinkJellyfish,    desc:'A rosy glow in the darkest depths!',      stageUnlock:4 },
   { id:'goldLobster',     name:'Gold Lobster',      rarity:'epic',      pts:48,  baseSpeed:1.8, scale:0.85, noFlip:false, draw:drawGoldLobster,      desc:'Strikingly rare golden coloration!',      stageUnlock:4 },
   { id:'blueCrab',        name:'Blue Crab',         rarity:'uncommon',  pts:22,  baseSpeed:1.6, scale:0.85, noFlip:false, draw:drawBlueCrab,         desc:'A blue-tinted crab of the deep reef!',   stageUnlock:2 },
+  // Clownfish colour variants
+  { id:'goldenClownfish',  name:'Golden Clownfish',  rarity:'uncommon',  pts:16,  baseSpeed:2.6, scale:1.0,  noFlip:false, draw:drawGoldenClownfish,  desc:'Shimmering golden cousin of the clownfish!',  stageUnlock:1 },
+  { id:'pinkClownfish',    name:'Pink Clownfish',    rarity:'uncommon',  pts:16,  baseSpeed:2.6, scale:1.0,  noFlip:false, draw:drawPinkClownfish,    desc:'Rare rosy clownfish of shallow reefs!',        stageUnlock:1 },
+  { id:'purpleClownfish',  name:'Purple Clownfish',  rarity:'uncommon',  pts:18,  baseSpeed:2.5, scale:1.0,  noFlip:false, draw:drawPurpleClownfish,  desc:'A regal purple-hued clownfish!',               stageUnlock:1 },
+  // Angelfish colour variants
+  { id:'redAngelfish',     name:'Red Angelfish',     rarity:'uncommon',  pts:24,  baseSpeed:2.1, scale:0.9,  noFlip:false, draw:drawRedAngelfish,     desc:'A fiery red angelfish of warm waters!',        stageUnlock:2 },
+  { id:'tealAngelfish',    name:'Teal Angelfish',    rarity:'uncommon',  pts:24,  baseSpeed:2.1, scale:0.9,  noFlip:false, draw:drawTealAngelfish,    desc:'Cool teal fins ripple through the current!',   stageUnlock:2 },
+  { id:'goldAngelfish',    name:'Gold Angelfish',    rarity:'rare',      pts:32,  baseSpeed:2.0, scale:0.9,  noFlip:false, draw:drawGoldAngelfish,    desc:'A prized golden variety of angelfish!',        stageUnlock:2 },
+  // Jellyfish colour variants
+  { id:'goldJellyfish',    name:'Gold Jellyfish',    rarity:'epic',      pts:55,  baseSpeed:0.7, scale:0.75, noFlip:true,  draw:drawGoldJellyfish,    desc:'A rare golden treasure of the abyss!',         stageUnlock:4 },
+  { id:'greenJellyfish',   name:'Green Jellyfish',   rarity:'rare',      pts:45,  baseSpeed:0.7, scale:0.75, noFlip:true,  draw:drawGreenJellyfish,   desc:'Bioluminescent green deep-sea jellyfish!',     stageUnlock:3 },
+  { id:'tealJellyfish',    name:'Teal Jellyfish',    rarity:'rare',      pts:45,  baseSpeed:0.7, scale:0.75, noFlip:true,  draw:drawTealJellyfish,    desc:'Ghostly teal glow in the midnight zone!',      stageUnlock:3 },
+  // Seahorse colour variants
+  { id:'blueSeahorse',     name:'Blue Seahorse',     rarity:'rare',      pts:38,  baseSpeed:0.9, scale:0.75, noFlip:false, draw:drawBlueSeahorse,     desc:'An ocean-blue dancer of the deep!',            stageUnlock:3 },
+  { id:'pinkSeahorse',     name:'Pink Seahorse',     rarity:'rare',      pts:38,  baseSpeed:0.9, scale:0.75, noFlip:false, draw:drawPinkSeahorse,     desc:'A delicate pink seahorse, very rare!',         stageUnlock:3 },
+  { id:'redSeahorse',      name:'Red Seahorse',      rarity:'rare',      pts:40,  baseSpeed:0.9, scale:0.75, noFlip:false, draw:drawRedSeahorse,      desc:'Fiery red seahorse clings to coral!',          stageUnlock:3 },
+  // Pufferfish colour variants
+  { id:'bluePufferfish',   name:'Blue Pufferfish',   rarity:'common',    pts:17,  baseSpeed:1.5, scale:0.95, noFlip:false, draw:drawBluePufferfish,   desc:'Puffs up in brilliant blue!',                  stageUnlock:1 },
+  { id:'pinkPufferfish',   name:'Pink Pufferfish',   rarity:'uncommon',  pts:20,  baseSpeed:1.5, scale:0.95, noFlip:false, draw:drawPinkPufferfish,   desc:'Soft pink spines hide a fierce puffer!',       stageUnlock:1 },
+  { id:'purplePufferfish', name:'Purple Pufferfish', rarity:'uncommon',  pts:20,  baseSpeed:1.5, scale:0.95, noFlip:false, draw:drawPurplePufferfish, desc:'Royally purple and dangerously round!',         stageUnlock:2 },
+  { id:'orangePufferfish', name:'Orange Pufferfish', rarity:'common',    pts:17,  baseSpeed:1.5, scale:0.95, noFlip:false, draw:drawOrangePufferfish, desc:'An extra-spiky orange balloon fish!',           stageUnlock:1 },
+  // Shark colour variants
+  { id:'blueShark',        name:'Blue Shark',        rarity:'rare',      pts:35,  baseSpeed:4.2, scale:1.1,  noFlip:false, draw:drawBlueShark,        desc:'A sleek deep-ocean blue shark!',                stageUnlock:3 },
+  { id:'whiteShark',       name:'White Shark',       rarity:'rare',      pts:38,  baseSpeed:4.5, scale:1.1,  noFlip:false, draw:drawWhiteShark,       desc:'Ghostly pale predator of cold seas!',           stageUnlock:3 },
+  { id:'goldShark',        name:'Gold Shark',        rarity:'epic',      pts:55,  baseSpeed:4.0, scale:1.1,  noFlip:false, draw:drawGoldShark,        desc:'An impossibly rare golden shark!',              stageUnlock:4 },
+  { id:'redShark',         name:'Red Shark',         rarity:'epic',      pts:58,  baseSpeed:4.3, scale:1.1,  noFlip:false, draw:drawRedShark,         desc:'Crimson terror of the deep!',                   stageUnlock:4 },
+  // Octopus colour variants
+  { id:'blueOctopus',      name:'Blue Octopus',      rarity:'epic',      pts:52,  baseSpeed:1.3, scale:0.85, noFlip:false, draw:drawBlueOctopus,      desc:'Cobalt blue ink clouds the water!',             stageUnlock:4 },
+  { id:'pinkOctopus',      name:'Pink Octopus',      rarity:'epic',      pts:52,  baseSpeed:1.3, scale:0.85, noFlip:false, draw:drawPinkOctopus,      desc:'Rose-tinted eight-armed wonder!',               stageUnlock:4 },
+  { id:'redOctopus',       name:'Red Octopus',       rarity:'rare',      pts:45,  baseSpeed:1.4, scale:0.85, noFlip:false, draw:drawRedOctopus,       desc:'Bold red markings signal danger!',              stageUnlock:3 },
+  // Crab colour variants
+  { id:'goldenCrab',       name:'Golden Crab',       rarity:'rare',      pts:32,  baseSpeed:1.4, scale:0.85, noFlip:false, draw:drawGoldenCrab,       desc:'A gleaming golden-shelled crab!',               stageUnlock:2 },
+  { id:'greenCrab',        name:'Green Crab',        rarity:'uncommon',  pts:24,  baseSpeed:1.4, scale:0.85, noFlip:false, draw:drawGreenCrab,        desc:'Moss-green crab blends into seaweed!',          stageUnlock:2 },
+  { id:'purpleCrab',       name:'Purple Crab',       rarity:'uncommon',  pts:26,  baseSpeed:1.4, scale:0.85, noFlip:false, draw:drawPurpleCrab,       desc:'A violet-clawed reef crab!',                    stageUnlock:2 },
+  // Starfish colour variants
+  { id:'blueStarfish',     name:'Blue Starfish',     rarity:'uncommon',  pts:28,  baseSpeed:0.8, scale:0.9,  noFlip:true,  draw:drawBlueStarfish,     desc:'A rare ocean-blue sea star!',                   stageUnlock:2 },
+  { id:'goldStarfish',     name:'Gold Starfish',     rarity:'rare',      pts:38,  baseSpeed:0.8, scale:0.9,  noFlip:true,  draw:drawGoldStarfish,     desc:'Five golden arms worth their weight!',          stageUnlock:2 },
+  { id:'pinkStarfish',     name:'Pink Starfish',     rarity:'uncommon',  pts:27,  baseSpeed:0.8, scale:0.9,  noFlip:true,  draw:drawPinkStarfish,     desc:'Rosy pink star of the sunlit reef!',            stageUnlock:1 },
+  // Lobster colour variants
+  { id:'blueLobster',      name:'Blue Lobster',      rarity:'epic',      pts:52,  baseSpeed:1.6, scale:0.85, noFlip:false, draw:drawBlueLobster,      desc:'1-in-2-million blue lobster!',                  stageUnlock:4 },
+  { id:'pinkLobster',      name:'Pink Lobster',      rarity:'rare',      pts:42,  baseSpeed:1.6, scale:0.85, noFlip:false, draw:drawPinkLobster,      desc:'A delicate pastel pink lobster!',               stageUnlock:3 },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1207,11 +1289,11 @@ const CREATURES = [
    ═══════════════════════════════════════════════════════════════════════════ */
 // Zone definitions shared across all 3 game modes
 const ZONES=[
-  { z:1, name:'Sunlight Zone',  depth:'0–200m',    bg:{top:'#81D4FA',mid:'#0288D1',bot:'#01579B'}, pool:['clownfish','pufferfish','blueTang','angelfish','starfish','crab','blueClownfish','goldenTang','mantisShrimp','dolphin'] },
-  { z:2, name:'Twilight Zone',  depth:'200–1000m',  bg:{top:'#1565C0',mid:'#0D47A1',bot:'#1A237E'}, pool:['angelfish','starfish','crab','dolphin','mantisShrimp','purpleAngelfish','purpleStarfish','morayEel','blueCrab','barracuda','seahorse','goldenSeahorse'] },
-  { z:3, name:'Midnight Zone',  depth:'1000–4000m', bg:{top:'#0D1B42',mid:'#07102B',bot:'#030812'}, pool:['shark','seahorse','seaTurtle','mantaRay','narwhal','hammerheadShark','barracuda','barreleyeFish','anglerfish','goldenSeahorse'] },
-  { z:4, name:'The Abyss',      depth:'4000–6000m', bg:{top:'#050A20',mid:'#020510',bot:'#010208'}, pool:['jellyfish','octopus','lobster','anglerfish','viperfish','barreleyeFish','dumboOctopus','gulperEel','pinkJellyfish','goldLobster'] },
-  { z:5, name:'Hadal Trenches', depth:'6000m+',     bg:{top:'#020308',mid:'#010204',bot:'#000002'}, pool:['blueWhale','giantSquid','gulperEel','viperfish','dumboOctopus','anglerfish','narwhal','jellyfish'] },
+  { z:1, name:'Sunlight Zone',  depth:'0–200m',    bg:{top:'#81D4FA',mid:'#0288D1',bot:'#01579B'}, pool:['clownfish','pufferfish','blueTang','angelfish','starfish','crab','blueClownfish','goldenTang','goldenClownfish','pinkClownfish','purpleClownfish','bluePufferfish','orangePufferfish','pinkPufferfish','mantisShrimp','dolphin','pinkStarfish'] },
+  { z:2, name:'Twilight Zone',  depth:'200–1000m',  bg:{top:'#1565C0',mid:'#0D47A1',bot:'#1A237E'}, pool:['angelfish','starfish','crab','dolphin','mantisShrimp','purpleAngelfish','purpleStarfish','morayEel','blueCrab','barracuda','seahorse','goldenSeahorse','redAngelfish','tealAngelfish','goldAngelfish','goldenCrab','greenCrab','purpleCrab','blueStarfish','goldStarfish','purplePufferfish'] },
+  { z:3, name:'Midnight Zone',  depth:'1000–4000m', bg:{top:'#0D1B42',mid:'#07102B',bot:'#030812'}, pool:['shark','seahorse','seaTurtle','mantaRay','narwhal','hammerheadShark','barracuda','barreleyeFish','anglerfish','goldenSeahorse','blueShark','whiteShark','blueSeahorse','pinkSeahorse','redSeahorse','greenJellyfish','tealJellyfish','redOctopus','pinkLobster'] },
+  { z:4, name:'The Abyss',      depth:'4000–6000m', bg:{top:'#050A20',mid:'#020510',bot:'#010208'}, pool:['jellyfish','octopus','lobster','anglerfish','viperfish','barreleyeFish','dumboOctopus','gulperEel','pinkJellyfish','goldLobster','goldJellyfish','goldShark','redShark','blueOctopus','pinkOctopus','blueLobster'] },
+  { z:5, name:'Hadal Trenches', depth:'6000m+',     bg:{top:'#020308',mid:'#010204',bot:'#000002'}, pool:['blueWhale','giantSquid','gulperEel','viperfish','dumboOctopus','anglerfish','narwhal','jellyfish','goldShark','redShark','blueOctopus'] },
 ];
 
 const ALL_STAGES = [
@@ -1356,9 +1438,10 @@ function loadLeaderboard(){
   try{leaderboard=JSON.parse(localStorage.getItem(LB_KEY)||'[]');}catch(e){leaderboard=[];}
 }
 function saveToLeaderboard(name,sc){
-  leaderboard.push({name:name||'Anonymous',score:sc,date:new Date().toLocaleDateString()});
+  const modeLabel={cannon:'🎯 Cannon',fishing:'🎣 Fishing',submersible:'🔬 Sub'}[gameMode]||gameMode;
+  leaderboard.push({name:name||'Anonymous',score:sc,mode:modeLabel,date:new Date().toLocaleDateString()});
   leaderboard.sort((a,b)=>b.score-a.score);
-  leaderboard=leaderboard.slice(0,10);
+  leaderboard=leaderboard.slice(0,15);
   try{localStorage.setItem(LB_KEY,JSON.stringify(leaderboard));}catch(e){}
 }
 
@@ -1449,11 +1532,13 @@ const FISH={
 /* ─── Submersible stage state ───────────────────────────────────────────── */
 const SUB={
   x:0, y:0,
-  dx:1.3, dy:0,
+  dx:0, dy:0,
   targetY:0,
   armExtended:false, armTimer:0, armLength:0,
   caughtThisZone:0,
   upHeld:false, downHeld:false,
+  leftHeld:false, rightHeld:false,
+  facingRight:true,
 };
 
 /* ─── Leaderboard ────────────────────────────────────────────────────────── */
@@ -1506,9 +1591,10 @@ function gotoStage(idx){
     FISH.breakAnim=0; FISH.successAnim=0; FISH.lineX=W/2;
     for(let i=0;i<5;i++) spawnFishingCreature();
   } else if(t==='submersible'){
-    SUB.x=100; SUB.y=H/2; SUB.dx=1.3; SUB.targetY=H/2;
+    SUB.x=W/2; SUB.y=H/2; SUB.dx=0; SUB.targetY=H/2;
     SUB.armExtended=false; SUB.armTimer=0; SUB.armLength=0;
     SUB.caughtThisZone=0; SUB.upHeld=false; SUB.downHeld=false;
+    SUB.leftHeld=false; SUB.rightHeld=false; SUB.facingRight=true;
     for(let i=0;i<6;i++) spawnFishingCreature();
   }
 }
@@ -1528,9 +1614,10 @@ function retryStage(){
     FISH.breakAnim=0; FISH.successAnim=0; FISH.lineX=W/2;
     for(let i=0;i<5;i++) spawnFishingCreature();
   } else if(t==='submersible'){
-    SUB.x=100; SUB.y=H/2; SUB.dx=1.3; SUB.targetY=H/2;
+    SUB.x=W/2; SUB.y=H/2; SUB.dx=0; SUB.targetY=H/2;
     SUB.armExtended=false; SUB.armTimer=0; SUB.armLength=0;
     SUB.caughtThisZone=0; SUB.upHeld=false; SUB.downHeld=false;
+    SUB.leftHeld=false; SUB.rightHeld=false; SUB.facingRight=true;
     for(let i=0;i<6;i++) spawnFishingCreature();
   }
 }
@@ -1554,9 +1641,10 @@ function selectMode(mode){
     for(let i=0;i<5;i++) spawnFishingCreature();
     screen='intro'; introTimer=0;
   } else if(mode==='submersible'){
-    SUB.x=100; SUB.y=H/2; SUB.dx=1.3; SUB.targetY=H/2;
+    SUB.x=W/2; SUB.y=H/2; SUB.dx=0; SUB.targetY=H/2;
     SUB.armExtended=false; SUB.armTimer=0; SUB.armLength=0;
     SUB.caughtThisZone=0; SUB.upHeld=false; SUB.downHeld=false;
+    SUB.leftHeld=false; SUB.rightHeld=false; SUB.facingRight=true;
     for(let i=0;i<6;i++) spawnFishingCreature();
     screen='intro'; introTimer=0;
   } else {
@@ -2109,6 +2197,15 @@ function drawHUD(){
     ctx.fillText(prog.sub, barX, barY+barH+14);
   }
 
+  // Home button (below top bar, top-left)
+  ctx.fillStyle='rgba(0,0,0,.55)';
+  ctx.beginPath();ctx.roundRect(4,74,64,32,10);ctx.fill();
+  ctx.strokeStyle='rgba(80,180,255,.45)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(4,74,64,32,10);ctx.stroke();
+  ctx.fillStyle='rgba(200,230,255,.9)';ctx.font='bold 12px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('🏠 HOME',36,93);
+  ctx._homeBtn={x:4,y:74,w:64,h:32};
+
   // popups
   popups.forEach(p=>{
     ctx.save();ctx.globalAlpha=p.life;
@@ -2472,17 +2569,23 @@ function drawLeaderboard(){
       ctx.fillText(medal,lx+12,ry+rowH/2+8);
       // name
       ctx.fillStyle='#FFF';
-      ctx.font='bold 20px Comic Sans MS,cursive';
-      ctx.fillText(entry.name,lx+70,ry+rowH/2+8);
+      ctx.font='bold 18px Comic Sans MS,cursive';
+      ctx.textAlign='left';
+      ctx.fillText(entry.name,lx+70,ry+rowH/2+2);
+      // mode label
+      if(entry.mode){
+        ctx.fillStyle='rgba(100,220,255,.7)';ctx.font='11px Comic Sans MS,cursive';
+        ctx.fillText(entry.mode,lx+70,ry+rowH/2+16);
+      }
       // score
       ctx.fillStyle='#7ee8ff';
-      ctx.font='bold 22px Comic Sans MS,cursive';
+      ctx.font='bold 20px Comic Sans MS,cursive';
       ctx.textAlign='right';
-      ctx.fillText(entry.score,lx+colW-100,ry+rowH/2+8);
+      ctx.fillText(entry.score,lx+colW-80,ry+rowH/2+8);
       // date
       ctx.fillStyle='rgba(150,180,220,.6)';
-      ctx.font='13px Comic Sans MS,cursive';
-      ctx.fillText(entry.date,lx+colW-10,ry+rowH/2+8);
+      ctx.font='12px Comic Sans MS,cursive';
+      ctx.fillText(entry.date,lx+colW-8,ry+rowH/2+8);
     });
   }
   // back button
@@ -2500,7 +2603,7 @@ function drawLeaderboard(){
    ═══════════════════════════════════════════════════════════════════════════ */
 const BOAT_Y=60; // y of boat center
 function drawFishingBoat(){
-  const bx=FISH.lineX;
+  const bx=W/2; // boat always centered; line drops to FISH.lineX
   // water surface ripple
   ctx.strokeStyle='rgba(100,200,255,.3)';ctx.lineWidth=2;
   ctx.beginPath();
@@ -2510,18 +2613,31 @@ function drawFishingBoat(){
   }
   ctx.stroke();
 
-  // vertical aim guide — shows cast column while idle
+  // dual cast zones shown while idle
   if(FISH.state==='idle'){
     const pulse=Math.sin(gameTime*.08)*.15+.25;
-    ctx.fillStyle=`rgba(80,180,255,${pulse*0.18})`;
-    ctx.fillRect(FISH.lineX-65,BOAT_Y+40,130,H-BOAT_Y-100);
-    ctx.strokeStyle=`rgba(100,220,255,${pulse})`;
+    // left cast zone
+    const lx=W*0.28;
+    ctx.fillStyle=`rgba(80,180,255,${pulse*0.14})`;
+    ctx.fillRect(lx-65,BOAT_Y+40,130,H-BOAT_Y-120);
+    ctx.strokeStyle=`rgba(100,220,255,${pulse*0.8})`;
     ctx.lineWidth=1.2;ctx.setLineDash([7,5]);
-    ctx.beginPath();ctx.moveTo(FISH.lineX,BOAT_Y+40);ctx.lineTo(FISH.lineX,H-60);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(lx,BOAT_Y+40);ctx.lineTo(lx,H-80);ctx.stroke();
     ctx.setLineDash([]);
+    // right cast zone
+    const rx=W*0.72;
+    ctx.fillStyle=`rgba(80,220,180,${pulse*0.14})`;
+    ctx.fillRect(rx-65,BOAT_Y+40,130,H-BOAT_Y-120);
+    ctx.strokeStyle=`rgba(100,255,210,${pulse*0.8})`;
+    ctx.lineWidth=1.2;ctx.setLineDash([7,5]);
+    ctx.beginPath();ctx.moveTo(rx,BOAT_Y+40);ctx.lineTo(rx,H-80);ctx.stroke();
+    ctx.setLineDash([]);
+    // labels
     ctx.fillStyle=`rgba(120,220,255,${pulse+.1})`;
     ctx.font='11px Comic Sans MS,cursive';ctx.textAlign='center';
-    ctx.fillText('▼ cast zone ▼',FISH.lineX,H-42);
+    ctx.fillText('◄ TAP LEFT',lx,H-60);
+    ctx.fillStyle=`rgba(100,255,200,${pulse+.1})`;
+    ctx.fillText('TAP RIGHT ►',rx,H-60);
   }
 
   // hull
@@ -2615,16 +2731,25 @@ function drawFishingHUD(){
     ctx.fillText('🎣 REEL!',W/2,H-100);
   }
 
+  // Home button (below top bar, top-left)
+  ctx.fillStyle='rgba(0,0,0,.55)';
+  ctx.beginPath();ctx.roundRect(4,74,64,32,10);ctx.fill();
+  ctx.strokeStyle='rgba(80,180,255,.45)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(4,74,64,32,10);ctx.stroke();
+  ctx.fillStyle='rgba(200,230,255,.9)';ctx.font='bold 12px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('🏠 HOME',36,93);
+  ctx._homeBtn={x:4,y:74,w:64,h:32};
+
   // state prompts
   if(FISH.state==='idle'){
     if(castsLeft>0){
       const pulse=Math.sin(gameTime*.1)*.4+.6;
       ctx.fillStyle=`rgba(100,230,255,${pulse})`;
-      ctx.font='bold 28px Comic Sans MS,cursive';ctx.textAlign='center';
-      ctx.fillText('TAP TO CAST 🎣',W/2,H/2-10);
+      ctx.font='bold 24px Comic Sans MS,cursive';ctx.textAlign='center';
+      ctx.fillText('🎣 TAP LEFT or RIGHT to cast!',W/2,H/2-10);
       ctx.fillStyle=`rgba(180,230,255,${pulse*.7})`;
-      ctx.font='15px Comic Sans MS,cursive';
-      ctx.fillText('Wait for a fish inside the blue column first!',W/2,H/2+22);
+      ctx.font='14px Comic Sans MS,cursive';
+      ctx.fillText('Wait for fish inside a zone, then tap that side',W/2,H/2+20);
     }
   } else if(FISH.state==='sinking'){
     const pulse=Math.sin(gameTime*.14)*.4+.6;
@@ -2689,83 +2814,65 @@ function drawSubmersible(){
   const sx=SUB.x, sy=SUB.y;
   const stage=STAGES[stageIdx];
   const lightLen=stage.lightRange||150;
+  const fr=SUB.facingRight;
 
-  // spotlight beam (front)
+  // All sub geometry drawn in local coords centred at (sx,sy), flipped for facing left
   ctx.save();
-  const beam=ctx.createRadialGradient(sx+62,sy,4,sx+62+lightLen*0.5,sy,lightLen);
+  ctx.translate(sx,sy);
+  if(!fr) ctx.scale(-1,1);
+
+  // spotlight beam (front of sub = +x direction in local coords)
+  const beam=ctx.createRadialGradient(62,0,4,62+lightLen*0.5,0,lightLen);
   beam.addColorStop(0,'rgba(255,255,200,0.22)');
   beam.addColorStop(1,'rgba(255,255,200,0)');
   ctx.fillStyle=beam;
   ctx.beginPath();
-  ctx.moveTo(sx+55,sy-12);
-  ctx.lineTo(sx+55+lightLen,sy-60);
-  ctx.lineTo(sx+55+lightLen,sy+60);
-  ctx.lineTo(sx+55,sy+12);
+  ctx.moveTo(55,-12);ctx.lineTo(55+lightLen,-60);
+  ctx.lineTo(55+lightLen,60);ctx.lineTo(55,12);
   ctx.closePath();ctx.fill();
-  ctx.restore();
 
-  // === glass container (back-left) ===
-  ctx.save();
+  // glass container (back = -x)
   ctx.fillStyle='rgba(0,40,70,.65)';
   ctx.strokeStyle='rgba(80,200,255,.75)';ctx.lineWidth=2;
-  ctx.beginPath();ctx.roundRect(sx-100,sy-24,42,48,5);ctx.fill();ctx.stroke();
-  // water fill inside
+  ctx.beginPath();ctx.roundRect(-100,-24,42,48,5);ctx.fill();ctx.stroke();
   const fillH=Math.min(44,(SUB.caughtThisZone/((stage.catchTarget||8))*44));
   ctx.fillStyle='rgba(0,150,200,.3)';
-  ctx.beginPath();ctx.roundRect(sx-98,sy+20-fillH,38,fillH,3);ctx.fill();
-  // bubbles inside
+  ctx.beginPath();ctx.roundRect(-98,20-fillH,38,fillH,3);ctx.fill();
   ctx.fillStyle='rgba(150,230,255,.5)';
   [[-6,-8],[4,-3],[-2,4]].forEach(([ox,oy])=>{
     const bub=Math.sin(gameTime*.07+ox)*.5+.5;
-    ctx.beginPath();ctx.arc(sx-79+ox,sy+oy+bub*4,2+bub,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(-79+ox,oy+bub*4,2+bub,0,Math.PI*2);ctx.fill();
   });
-  // count label
-  ctx.fillStyle='#00E5FF';ctx.font='bold 13px Comic Sans MS,cursive';ctx.textAlign='center';
-  ctx.fillText(`${SUB.caughtThisZone}`,sx-79,sy+6);
-  ctx.restore();
 
-  // === sub body hull ===
-  ctx.save();
-  // drop shadow
+  // hull shadow
   ctx.fillStyle='rgba(0,0,0,.25)';
-  ctx.beginPath();ctx.ellipse(sx+3,sy+5,72,30,0,0,Math.PI*2);ctx.fill();
-  // main hull gradient
-  const hg=ctx.createLinearGradient(sx-70,sy-26,sx+70,sy+26);
+  ctx.beginPath();ctx.ellipse(3,5,72,30,0,0,Math.PI*2);ctx.fill();
+  // main hull
+  const hg=ctx.createLinearGradient(-70,-26,70,26);
   hg.addColorStop(0,'#546E7A');hg.addColorStop(.45,'#90A4AE');hg.addColorStop(1,'#37474F');
   ctx.fillStyle=hg;
-  ctx.beginPath();ctx.ellipse(sx,sy,70,27,0,0,Math.PI*2);ctx.fill();
-  // hull rivets / panel lines
+  ctx.beginPath();ctx.ellipse(0,0,70,27,0,0,Math.PI*2);ctx.fill();
   ctx.strokeStyle='rgba(80,110,130,.45)';ctx.lineWidth=1;
-  [-12,0,12].forEach(oy=>{
-    ctx.beginPath();ctx.moveTo(sx-50,sy+oy);ctx.lineTo(sx+50,sy+oy);ctx.stroke();
-  });
+  [-12,0,12].forEach(oy=>{ctx.beginPath();ctx.moveTo(-50,oy);ctx.lineTo(50,oy);ctx.stroke();});
   // nose cone
-  const ncg=ctx.createRadialGradient(sx+68,sy-5,2,sx+70,sy,22);
+  const ncg=ctx.createRadialGradient(68,-5,2,70,0,22);
   ncg.addColorStop(0,'#78909C');ncg.addColorStop(1,'#37474F');
   ctx.fillStyle=ncg;
-  ctx.beginPath();ctx.ellipse(sx+70,sy,18,18,0,0,Math.PI*2);ctx.fill();
-  ctx.restore();
+  ctx.beginPath();ctx.ellipse(70,0,18,18,0,0,Math.PI*2);ctx.fill();
 
-  // === porthole window ===
-  ctx.save();
-  // outer ring
-  ctx.beginPath();ctx.arc(sx+18,sy,19,0,Math.PI*2);
+  // porthole
+  ctx.beginPath();ctx.arc(18,0,19,0,Math.PI*2);
   ctx.strokeStyle='#607D8B';ctx.lineWidth=5;ctx.stroke();
-  // glass
-  ctx.beginPath();ctx.arc(sx+18,sy,15,0,Math.PI*2);
+  ctx.beginPath();ctx.arc(18,0,15,0,Math.PI*2);
   ctx.fillStyle='rgba(50,150,220,.25)';ctx.fill();
-  // boy
-  drawBoyInWindow(ctx,sx+18,sy);
-  // glare
-  ctx.beginPath();ctx.arc(sx+13,sy-8,4,0,Math.PI*2);
+  drawBoyInWindow(ctx,18,0);
+  ctx.beginPath();ctx.arc(13,-8,4,0,Math.PI*2);
   ctx.fillStyle='rgba(255,255,255,.35)';ctx.fill();
-  ctx.restore();
 
-  // === propellers (back) ===
+  // propellers (back)
   const pa=gameTime*0.18;
   [-1,1].forEach(s=>{
-    const px=sx-58,py=sy+s*20;
-    ctx.save();ctx.translate(px,py);ctx.rotate(pa*s);
+    ctx.save();ctx.translate(-58,s*20);ctx.rotate(pa*s);
     ctx.strokeStyle='#78909C';ctx.lineWidth=3;ctx.lineCap='round';
     for(let b=0;b<3;b++){
       const a=b*Math.PI*2/3;
@@ -2774,47 +2881,47 @@ function drawSubmersible(){
     ctx.restore();
   });
 
-  // === robot arm ===
-  const armBX=sx+64, armBY=sy+6;
+  // robot arm (front = +x)
   const ext=SUB.armLength;
-  ctx.save();
-  // base joint
   ctx.fillStyle='#607D8B';
-  ctx.beginPath();ctx.arc(armBX,armBY,7,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(64,6,7,0,Math.PI*2);ctx.fill();
   ctx.strokeStyle='#90A4AE';ctx.lineWidth=2;
-  ctx.beginPath();ctx.arc(armBX,armBY,7,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.arc(64,6,7,0,Math.PI*2);ctx.stroke();
   if(ext>2){
     const seg1=Math.min(ext,55);
-    // upper arm
     ctx.strokeStyle='#78909C';ctx.lineWidth=8;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(armBX,armBY);ctx.lineTo(armBX+seg1,armBY);ctx.stroke();
-    // elbow joint
+    ctx.beginPath();ctx.moveTo(64,6);ctx.lineTo(64+seg1,6);ctx.stroke();
     ctx.fillStyle='#546E7A';
-    ctx.beginPath();ctx.arc(armBX+seg1,armBY,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(64+seg1,6,5,0,Math.PI*2);ctx.fill();
     if(ext>55){
-      const seg2=ext-55;
-      const seg2Y=armBY+seg2*0.28;
+      const seg2=ext-55, seg2Y=6+seg2*0.28;
       ctx.lineWidth=6;
-      ctx.beginPath();ctx.moveTo(armBX+seg1,armBY);ctx.lineTo(armBX+seg1+seg2,seg2Y);ctx.stroke();
-      // claw
-      const cx2=armBX+seg1+seg2, cy2=seg2Y;
+      ctx.beginPath();ctx.moveTo(64+seg1,6);ctx.lineTo(64+seg1+seg2,seg2Y);ctx.stroke();
+      const cx2=64+seg1+seg2, cy2=seg2Y;
       ctx.strokeStyle='#FFD700';ctx.lineWidth=3;ctx.lineCap='round';
       const clawOpen=SUB.armExtended?10:2;
       ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2+12,cy2-clawOpen);ctx.stroke();
       ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2+12,cy2+clawOpen);ctx.stroke();
     } else {
-      const cx2=armBX+seg1, cy2=armBY;
+      const cx2=64+seg1, cy2=6;
       ctx.strokeStyle='#FFD700';ctx.lineWidth=3;ctx.lineCap='round';
       const clawOpen=SUB.armExtended?8:2;
       ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2+10,cy2-clawOpen);ctx.stroke();
       ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2+10,cy2+clawOpen);ctx.stroke();
     }
   }
-  ctx.restore();
 
-  // propulsion bubbles
+  ctx.restore(); // end flipped context
+
+  // count text drawn in world-space (no flip, so text reads correctly)
+  const countX = fr ? sx-79 : sx+79;
+  ctx.fillStyle='#00E5FF';ctx.font='bold 13px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText(`${SUB.caughtThisZone}`,countX,sy+6);
+
+  // propulsion bubbles from the back
   if(Math.random()<0.3){
-    particles.push({x:sx-68+Math.random()*6,y:sy+(Math.random()-.5)*20,dx:(Math.random()-.5)*.4-1.2,dy:(Math.random()-.5)*.6,size:Math.random()*3+1,color:'rgba(150,220,255,.55)',life:1,decay:0.025,star:false});
+    const bdir = fr ? -1 : 1;
+    particles.push({x:sx+bdir*68+Math.random()*6,y:sy+(Math.random()-.5)*20,dx:(Math.random()-.5)*.4+bdir*(-1.2),dy:(Math.random()-.5)*.6,size:Math.random()*3+1,color:'rgba(150,220,255,.55)',life:1,decay:0.025,star:false});
   }
 }
 
@@ -2827,10 +2934,9 @@ function updateSub(){
     _stageClearTimeout=setTimeout(()=>{screen='stageClear';_stageClearTimeout=null;},900);
   }
 
-  // horizontal patrol (bounces off walls)
-  SUB.x+=SUB.dx;
-  if(SUB.x>W-90){SUB.x=W-90;SUB.dx=-Math.abs(SUB.dx);}
-  if(SUB.x<90){SUB.x=90;SUB.dx=Math.abs(SUB.dx);}
+  // manual horizontal movement
+  if(SUB.leftHeld  && SUB.x>90) { SUB.x-=2.8; SUB.facingRight=false; }
+  if(SUB.rightHeld && SUB.x<W-90){ SUB.x+=2.8; SUB.facingRight=true; }
 
   // vertical: buttons held → move targetY; lerp sub toward it
   if(SUB.upHeld)   SUB.targetY=Math.max(110,SUB.targetY-4);
@@ -2847,9 +2953,14 @@ function updateSub(){
     SUB.armLength=Math.max(SUB.armLength-7,0);
   }
 
-  // claw tip position
-  const clawX = SUB.x+64+Math.min(SUB.armLength,55) + (SUB.armLength>55?(SUB.armLength-55):0) + 12;
-  const clawY = SUB.y+6 + (SUB.armLength>55?(SUB.armLength-55)*0.28:0);
+  // claw tip position in world coords (arm extends from front of sub)
+  const fr=SUB.facingRight;
+  const seg1=Math.min(SUB.armLength,55);
+  const seg2=SUB.armLength>55?SUB.armLength-55:0;
+  const localClawX=64+seg1+seg2+(seg2>0?12:10);
+  const localClawY=6+seg2*0.28;
+  const clawX=SUB.x+(fr?localClawX:-localClawX);
+  const clawY=SUB.y+localClawY;
 
   if(SUB.armLength>20){
     for(const cr of creatures){
@@ -2898,35 +3009,58 @@ function drawSubHUD(){
   ctx.fillStyle='rgba(150,220,255,.7)';ctx.font='11px Comic Sans MS,cursive';
   ctx.fillText('collected',14,42);
 
-  // bottom control buttons
-  const by=H-62,bh=52;
-  // UP
-  const upCol=SUB.upHeld?'rgba(0,150,255,.85)':'rgba(0,60,140,.7)';
-  ctx.fillStyle=upCol;ctx.beginPath();ctx.roundRect(8,by,72,bh,12);ctx.fill();
-  ctx.strokeStyle='rgba(80,180,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(8,by,72,bh,12);ctx.stroke();
-  ctx.fillStyle='#fff';ctx.font='bold 26px serif';ctx.textAlign='center';
-  ctx.fillText('▲',44,by+36);
+  // Home button (below top bar, top-left)
+  ctx.fillStyle='rgba(0,0,0,.55)';
+  ctx.beginPath();ctx.roundRect(4,72,64,30,10);ctx.fill();
+  ctx.strokeStyle='rgba(80,180,255,.45)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(4,72,64,30,10);ctx.stroke();
+  ctx.fillStyle='rgba(200,230,255,.9)';ctx.font='bold 11px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('🏠 HOME',36,90);
+  ctx._homeBtn={x:4,y:72,w:64,h:30};
 
-  // ARM
+  // bottom 5-button layout: ◄  ▲  🦾ARM  ▼  ►
+  const by=H-60,bh=50;
+  const b1x=4,b2x=76,b3x=W/2-44,b4x=W-148,b5x=W-72;
+  const bw=68, armW=88;
+
+  const leftCol=SUB.leftHeld?'rgba(0,180,255,.85)':'rgba(0,60,140,.7)';
+  ctx.fillStyle=leftCol;ctx.beginPath();ctx.roundRect(b1x,by,bw,bh,12);ctx.fill();
+  ctx.strokeStyle='rgba(80,180,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(b1x,by,bw,bh,12);ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 26px serif';ctx.textAlign='center';
+  ctx.fillText('◄',b1x+bw/2,by+36);
+
+  const upCol=SUB.upHeld?'rgba(0,150,255,.85)':'rgba(0,60,140,.7)';
+  ctx.fillStyle=upCol;ctx.beginPath();ctx.roundRect(b2x,by,bw,bh,12);ctx.fill();
+  ctx.strokeStyle='rgba(80,180,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(b2x,by,bw,bh,12);ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 26px serif';ctx.textAlign='center';
+  ctx.fillText('▲',b2x+bw/2,by+36);
+
   const armActive=SUB.armExtended;
   ctx.fillStyle=armActive?'rgba(255,140,0,.85)':'rgba(0,110,60,.75)';
-  ctx.beginPath();ctx.roundRect(W/2-44,by,88,bh,12);ctx.fill();
+  ctx.beginPath();ctx.roundRect(b3x,by,armW,bh,12);ctx.fill();
   ctx.strokeStyle=armActive?'#FFD700':'rgba(80,255,150,.6)';ctx.lineWidth=2;
-  ctx.beginPath();ctx.roundRect(W/2-44,by,88,bh,12);ctx.stroke();
-  ctx.fillStyle='#fff';ctx.font=`bold 13px Comic Sans MS,cursive`;ctx.textAlign='center';
-  ctx.fillText(armActive?'🦾 GRAB!':'🦾 ARM',W/2,by+34);
+  ctx.beginPath();ctx.roundRect(b3x,by,armW,bh,12);ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 12px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText(armActive?'🦾 GRAB!':'🦾 ARM',b3x+armW/2,by+32);
 
-  // DOWN
   const downCol=SUB.downHeld?'rgba(0,150,255,.85)':'rgba(0,60,140,.7)';
-  ctx.fillStyle=downCol;ctx.beginPath();ctx.roundRect(W-80,by,72,bh,12);ctx.fill();
-  ctx.strokeStyle='rgba(80,180,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(W-80,by,72,bh,12);ctx.stroke();
+  ctx.fillStyle=downCol;ctx.beginPath();ctx.roundRect(b4x,by,bw,bh,12);ctx.fill();
+  ctx.strokeStyle='rgba(80,180,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(b4x,by,bw,bh,12);ctx.stroke();
   ctx.fillStyle='#fff';ctx.font='bold 26px serif';ctx.textAlign='center';
-  ctx.fillText('▼',W-44,by+36);
+  ctx.fillText('▼',b4x+bw/2,by+36);
+
+  const rightCol=SUB.rightHeld?'rgba(0,180,255,.85)':'rgba(0,60,140,.7)';
+  ctx.fillStyle=rightCol;ctx.beginPath();ctx.roundRect(b5x,by,bw,bh,12);ctx.fill();
+  ctx.strokeStyle='rgba(80,180,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(b5x,by,bw,bh,12);ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 26px serif';ctx.textAlign='center';
+  ctx.fillText('►',b5x+bw/2,by+36);
 
   ctx._subBtns={
-    up:{x:8,y:by,w:72,h:bh},
-    arm:{x:W/2-44,y:by,w:88,h:bh},
-    down:{x:W-80,y:by,w:72,h:bh},
+    left: {x:b1x,y:by,w:bw,h:bh},
+    up:   {x:b2x,y:by,w:bw,h:bh},
+    arm:  {x:b3x,y:by,w:armW,h:bh},
+    down: {x:b4x,y:by,w:bw,h:bh},
+    right:{x:b5x,y:by,w:bw,h:bh},
   };
 
   // popups
@@ -3039,12 +3173,14 @@ function updateFishing(){
   }
 }
 
-function fishingTap(){
+function fishingTap(cx){
   const stage=STAGES[stageIdx];
   const castsLeft=stage.castLimit-FISH.castsDone;
   if(FISH.cooldown>0) return;
   if(FISH.state==='idle'){
     if(castsLeft<=0) return;
+    // Cast to whichever side was tapped
+    FISH.lineX = (cx===undefined||cx<W/2) ? W*0.28 : W*0.72;
     FISH.state='sinking';
     FISH.tipY=BOAT_Y+60;
     FISH.biteCreature=null;
@@ -3245,6 +3381,16 @@ canvas.addEventListener('mousemove',e=>{
 });
 
 function handleTap(cx,cy){
+  // Home button — available during all gameplay screens
+  if(ctx._homeBtn && (screen==='playing'||screen==='fishing'||screen==='sub')){
+    const hb=ctx._homeBtn;
+    if(cx>=hb.x&&cy>=hb.y&&cx<=hb.x+hb.w&&cy<=hb.y+hb.h){
+      creatures.length=0; particles.length=0; popups.length=0; nets.length=0; powerups.length=0;
+      SUB.upHeld=false; SUB.downHeld=false; SUB.leftHeld=false; SUB.rightHeld=false;
+      FISH.state='idle';
+      screen='menu'; return;
+    }
+  }
   if(screen==='menu'){
     if(_menuBtns){
       for(const btn of _menuBtns){
@@ -3275,7 +3421,7 @@ function handleTap(cx,cy){
     if(btn&&stageClearTimer>60&&cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
       stageClearTimer=0;
       if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
-      else { saveHighScore(); screen='menu'; }
+      else gotoStage(STAGES.length);
     }
     return;
   }
@@ -3297,7 +3443,7 @@ function handleTap(cx,cy){
     }
   }
   if(screen==='playing'){ aimAt(cx,cy); fireNet(); }
-  if(screen==='fishing'){ fishingTap(); }
+  if(screen==='fishing'){ fishingTap(cx); }
   if(screen==='sub'){
     const b=ctx._subBtns;
     if(b){
@@ -3325,11 +3471,22 @@ canvas.addEventListener('touchstart',e=>{
     _dexTouchY=cy; return;
   }
   if(screen==='sub'){
+    // Home button check (must come before sub buttons)
+    if(ctx._homeBtn){
+      const hb=ctx._homeBtn;
+      if(cx>=hb.x&&cy>=hb.y&&cx<=hb.x+hb.w&&cy<=hb.y+hb.h){
+        creatures.length=0; particles.length=0; popups.length=0; nets.length=0;
+        SUB.upHeld=false; SUB.downHeld=false; SUB.leftHeld=false; SUB.rightHeld=false;
+        FISH.state='idle'; screen='menu'; return;
+      }
+    }
     const b=ctx._subBtns;
     if(b){
+      if(cx>=b.left.x&&cy>=b.left.y&&cx<=b.left.x+b.left.w&&cy<=b.left.y+b.left.h){ SUB.leftHeld=true; return; }
       if(cx>=b.up.x&&cy>=b.up.y&&cx<=b.up.x+b.up.w&&cy<=b.up.y+b.up.h){ SUB.upHeld=true; return; }
       if(cx>=b.arm.x&&cy>=b.arm.y&&cx<=b.arm.x+b.arm.w&&cy<=b.arm.y+b.arm.h){ SUB.armExtended=true; SUB.armTimer=0; return; }
       if(cx>=b.down.x&&cy>=b.down.y&&cx<=b.down.x+b.down.w&&cy<=b.down.y+b.down.h){ SUB.downHeld=true; return; }
+      if(cx>=b.right.x&&cy>=b.right.y&&cx<=b.right.x+b.right.w&&cy<=b.right.y+b.right.h){ SUB.rightHeld=true; return; }
     }
   }
   handleTap(cx,cy);
@@ -3337,7 +3494,7 @@ canvas.addEventListener('touchstart',e=>{
 
 canvas.addEventListener('touchend',e=>{
   e.preventDefault();
-  if(screen==='sub'){ SUB.upHeld=false; SUB.downHeld=false; }
+  if(screen==='sub'){ SUB.upHeld=false; SUB.downHeld=false; SUB.leftHeld=false; SUB.rightHeld=false; }
 },{passive:false});
 
 canvas.addEventListener('touchmove',e=>{
@@ -3370,9 +3527,11 @@ window.addEventListener('keydown',e=>{
   if(screen==='sub'){
     if(e.code==='ArrowUp'){e.preventDefault();SUB.upHeld=true;}
     if(e.code==='ArrowDown'){e.preventDefault();SUB.downHeld=true;}
+    if(e.code==='ArrowLeft'){e.preventDefault();SUB.leftHeld=true;}
+    if(e.code==='ArrowRight'){e.preventDefault();SUB.rightHeld=true;}
     if(e.code==='Space'||e.code==='Enter'){e.preventDefault();SUB.armExtended=true;SUB.armTimer=0;}
   }
-  if(screen==='fishing'&&(e.code==='Space'||e.code==='Enter')){e.preventDefault();fishingTap();}
+  if(screen==='fishing'&&(e.code==='Space'||e.code==='Enter')){e.preventDefault();fishingTap(W*0.5);}
   if(screen==='intro'&&e.code==='Space'&&introTimer>60){
     const _t=STAGES[stageIdx].type;
     screen=_t==='fishing'?'fishing':_t==='submersible'?'sub':'playing';
@@ -3382,7 +3541,7 @@ window.addEventListener('keydown',e=>{
     if((e.code==='Space'||e.code==='Enter')&&btn&&stageClearTimer>60){
       stageClearTimer=0;
       if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
-      else { saveHighScore(); screen='menu'; }
+      else gotoStage(STAGES.length);
     }
   }
   if(screen==='stageFail'&&e.code==='Space') retryStage();
@@ -3392,6 +3551,8 @@ window.addEventListener('keyup',e=>{
   if(screen==='sub'){
     if(e.code==='ArrowUp') SUB.upHeld=false;
     if(e.code==='ArrowDown') SUB.downHeld=false;
+    if(e.code==='ArrowLeft') SUB.leftHeld=false;
+    if(e.code==='ArrowRight') SUB.rightHeld=false;
   }
 });
 
