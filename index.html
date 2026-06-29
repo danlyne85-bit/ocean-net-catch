@@ -1418,7 +1418,7 @@ let stageFailTimer=0;
 /* ─── Fishing stage state ────────────────────────────────────────────────── */
 const FISH={
   state:'idle',   // idle|sinking|bite_window|hooked|break|success
-  lineX:0, tipY:0, sinkSpeed:3.5,
+  lineX:0, tipY:0, sinkSpeed:2.0,
   creature:null,
   tension:0,
   biteTimer:0, biteWindow:90,
@@ -1481,6 +1481,8 @@ function gotoStage(idx){
     FISH.cooldown=0; FISH.castsDone=0; FISH.caughtThisStage=0;
     FISH.breakAnim=0; FISH.successAnim=0;
     FISH.lineX=W/2;
+    // pre-populate fish so they're swimming when casting starts
+    for(let i=0;i<5;i++) spawnCreature();
   }
 }
 function retryStage(){
@@ -1497,6 +1499,7 @@ function retryStage(){
     FISH.cooldown=0; FISH.castsDone=0; FISH.caughtThisStage=0;
     FISH.breakAnim=0; FISH.successAnim=0;
     FISH.lineX=W/2;
+    for(let i=0;i<5;i++) spawnCreature();
   }
 }
 
@@ -2377,8 +2380,23 @@ function drawFishingBoat(){
     const midX=rodTipX+(FISH.lineX-rodTipX)*0.5+Math.sin(gameTime*.03)*6*(1-tension);
     ctx.quadraticCurveTo(midX,FISH.tipY*0.5,FISH.lineX,FISH.tipY);
     ctx.stroke();
+    // depth detection ring (visible during sinking so player knows bite zone)
+    if(FISH.state==='sinking'){
+      const pulse=Math.sin(gameTime*.12)*.3+.7;
+      ctx.strokeStyle=`rgba(100,230,255,${0.35*pulse})`;ctx.lineWidth=1.5;
+      ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.arc(FISH.lineX,FISH.tipY,85,0,Math.PI*2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // bite glow ring
+    if(FISH.state==='bite_window'){
+      const pulse=Math.abs(Math.sin(gameTime*.22));
+      ctx.strokeStyle=`rgba(255,200,0,${0.7*pulse})`;ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(FISH.lineX,FISH.tipY,30,0,Math.PI*2);ctx.stroke();
+    }
     // hook
-    ctx.strokeStyle='#90A4AE';ctx.lineWidth=2.5;ctx.lineCap='round';
+    ctx.strokeStyle=FISH.state==='hooked'?'#FFD700':'#90A4AE';
+    ctx.lineWidth=2.5;ctx.lineCap='round';
     ctx.beginPath();
     ctx.arc(FISH.lineX,FISH.tipY+6,7,-Math.PI*0.1,Math.PI*0.8);
     ctx.stroke();
@@ -2485,6 +2503,9 @@ function updateFishing(){
   const stage=STAGES[stageIdx];
   const castsLeft=stage.castLimit-FISH.castsDone;
 
+  // pre-spawn fish immediately so there are always fish swimming when casting starts
+  if(creatures.filter(c=>!c.captured).length<4) spawnCreature();
+
   // auto-check stage clear
   if(FISH.caughtThisStage>=stage.catchTarget && !_stageClearTimeout){
     _stageClearTimeout=setTimeout(()=>{screen='stageClear';_stageClearTimeout=null;},800);
@@ -2496,40 +2517,49 @@ function updateFishing(){
 
   if(FISH.cooldown>0){ FISH.cooldown--; return; }
 
+  // pull bite/hooked creature toward hook x so it appears near the line
+  if(FISH.biteCreature && (FISH.state==='bite_window'||FISH.state==='hooked')){
+    FISH.biteCreature.x+=(FISH.lineX-FISH.biteCreature.x)*0.09;
+    FISH.biteCreature.y+=(FISH.tipY-FISH.biteCreature.y)*0.06;
+  }
+
   if(FISH.state==='sinking'){
     FISH.tipY+=FISH.sinkSpeed;
-    // check bite: any creature near hook?
+    // detect bite by DEPTH only — any fish near hook depth triggers
     if(FISH.biteCreature===null){
       for(const cr of creatures){
         if(cr.captured) continue;
-        const dx=cr.x-FISH.lineX, dy=cr.y-FISH.tipY;
-        if(Math.abs(dx)<70&&Math.abs(dy)<55){
+        const dy=cr.y-FISH.tipY;
+        if(Math.abs(dy)<85){
           FISH.biteCreature=cr;
           FISH.state='bite_window';
           FISH.biteTimer=FISH.biteWindow;
+          cr.dx=0; // freeze x movement so it gets pulled to hook
           break;
         }
       }
     }
-    // line reached bottom → retract silently
+    // line reached bottom → retract, count as missed cast
     if(FISH.tipY>H-60){
       FISH.tipY=H-60;
       FISH.state='idle';
       FISH.castsDone++;
       FISH.biteCreature=null;
       FISH.cooldown=40;
+      popups.push({x:W/2,y:H/2,text:'No bite this cast...',color:'#90A4AE',life:1,size:20,dy:-1.2});
     }
   } else if(FISH.state==='bite_window'){
     FISH.biteTimer--;
-    // keep hook position near creature
-    if(FISH.biteCreature) FISH.tipY=FISH.biteCreature.y;
     if(FISH.biteTimer<=0){
-      // missed the bite window
+      // missed the bite window — creature swims off
+      if(FISH.biteCreature){
+        FISH.biteCreature.dx=FISH.biteCreature.dx||2; // restore movement
+      }
       FISH.state='idle';
       FISH.castsDone++;
       FISH.biteCreature=null;
       FISH.cooldown=50;
-      popups.push({x:W/2,y:H/2-60,text:'Missed! 🐟',color:'#FF9800',life:1,size:26,dy:-1.5});
+      popups.push({x:W/2,y:H/2-60,text:'Too slow! 🐟',color:'#FF9800',life:1,size:26,dy:-1.5});
     }
   } else if(FISH.state==='hooked'){
     // tension slowly decreases when not reeling
