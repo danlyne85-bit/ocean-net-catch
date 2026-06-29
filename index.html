@@ -1223,7 +1223,7 @@ const STAGES = [
     id:2, name:'Reef Fishing Spot', type:'fishing',
     bg:{ top:'#00ACC1', mid:'#00838F', bot:'#006064' },
     pool:['clownfish','pufferfish','angelfish','starfish','crab','dolphin','mantisShrimp'],
-    castLimit:8, catchTarget:4,
+    speedMult:0.85, castLimit:8, catchTarget:4,
     tensionRate:{common:0.007,uncommon:0.012,rare:0.018,epic:0.026,legendary:0.04},
     challenge:{
       desc:'Catch 4 fish from 8 casts!',
@@ -1263,7 +1263,7 @@ const STAGES = [
     id:5, name:'Deep Fishing Grounds', type:'fishing',
     bg:{ top:'#1A237E', mid:'#0D1357', bot:'#050A30' },
     pool:['shark','seahorse','seaTurtle','mantaRay','narwhal','hammerheadShark','anglerfish','barreleyeFish'],
-    castLimit:10, catchTarget:5,
+    speedMult:1.0, castLimit:10, catchTarget:5,
     tensionRate:{common:0.010,uncommon:0.016,rare:0.024,epic:0.034,legendary:0.052},
     challenge:{
       desc:'Catch 5 deep fish from 10 casts!',
@@ -1290,7 +1290,7 @@ const STAGES = [
     id:7, name:'Hadal Fishing', type:'fishing',
     bg:{ top:'#020308', mid:'#010204', bot:'#000002' },
     pool:['jellyfish','octopus','dumboOctopus','gulperEel','viperfish','anglerfish','blueWhale','giantSquid'],
-    castLimit:8, catchTarget:4,
+    speedMult:1.1, castLimit:8, catchTarget:4,
     tensionRate:{common:0.013,uncommon:0.020,rare:0.030,epic:0.042,legendary:0.060},
     challenge:{
       desc:'Catch 4 abyssal fish from 8 casts!',
@@ -1481,8 +1481,8 @@ function gotoStage(idx){
     FISH.cooldown=0; FISH.castsDone=0; FISH.caughtThisStage=0;
     FISH.breakAnim=0; FISH.successAnim=0;
     FISH.lineX=W/2;
-    // pre-populate fish so they're swimming when casting starts
-    for(let i=0;i<5;i++) spawnCreature();
+    // pre-populate fish on-screen so they're visible immediately
+    for(let i=0;i<5;i++) spawnFishingCreature();
   }
 }
 function retryStage(){
@@ -1499,7 +1499,7 @@ function retryStage(){
     FISH.cooldown=0; FISH.castsDone=0; FISH.caughtThisStage=0;
     FISH.breakAnim=0; FISH.successAnim=0;
     FISH.lineX=W/2;
-    for(let i=0;i<5;i++) spawnCreature();
+    for(let i=0;i<5;i++) spawnFishingCreature();
   }
 }
 
@@ -1793,10 +1793,28 @@ function spawnCreature(){
   const def=pickCreature();
   const left=Math.random()<.5;
   const depth=.14+Math.random()*.62;
-  const spd=def.baseSpeed*STAGES[stageIdx].speedMult*(1+Math.random()*.3-.15);
+  const spd=def.baseSpeed*(STAGES[stageIdx].speedMult||1)*(1+Math.random()*.3-.15);
   creatures.push({
     ...def, x:left?-100:W+100, y:H*depth,
     dx:left?spd:-spd, dy:(Math.random()-.5)*.55,
+    phase:Math.random()*Math.PI*2,
+    wobbleAmp:Math.random()*5+2, wobbleSpeed:Math.random()*.04+.02,
+    captured:false, captureT:0, id2:Math.random(),
+  });
+}
+
+// For fishing stages: spawn creatures already on-screen so they're visible immediately
+function spawnFishingCreature(){
+  if(creatures.filter(c=>!c.captured).length>=CFG.maxOnScreen) return;
+  const def=pickCreature();
+  const goLeft=Math.random()<.5;
+  const spd=def.baseSpeed*(STAGES[stageIdx].speedMult||1)*(1+Math.random()*.25-.12);
+  // spread fish across visible screen width and below the boat (y > 110)
+  const xPos=W*0.08+Math.random()*W*0.84;
+  const depth=0.18+Math.random()*.52;
+  creatures.push({
+    ...def, x:xPos, y:H*depth,
+    dx:goLeft?-spd:spd, dy:(Math.random()-.5)*.55,
     phase:Math.random()*Math.PI*2,
     wobbleAmp:Math.random()*5+2, wobbleSpeed:Math.random()*.04+.02,
     captured:false, captureT:0, id2:Math.random(),
@@ -2503,8 +2521,8 @@ function updateFishing(){
   const stage=STAGES[stageIdx];
   const castsLeft=stage.castLimit-FISH.castsDone;
 
-  // pre-spawn fish immediately so there are always fish swimming when casting starts
-  if(creatures.filter(c=>!c.captured).length<4) spawnCreature();
+  // keep fish visible — spawn on-screen so they're always catchable
+  if(creatures.filter(c=>!c.captured).length<4) spawnFishingCreature();
 
   // auto-check stage clear
   if(FISH.caughtThisStage>=stage.catchTarget && !_stageClearTimeout){
@@ -2525,10 +2543,11 @@ function updateFishing(){
 
   if(FISH.state==='sinking'){
     FISH.tipY+=FISH.sinkSpeed;
-    // detect bite by DEPTH only — any fish near hook depth triggers
+    // detect bite: fish must be on-screen and near hook depth
     if(FISH.biteCreature===null){
       for(const cr of creatures){
         if(cr.captured) continue;
+        if(cr.x<-40||cr.x>W+40) continue; // skip off-screen fish
         const dy=cr.y-FISH.tipY;
         if(Math.abs(dy)<85){
           FISH.biteCreature=cr;
@@ -2725,9 +2744,9 @@ function loop(){
     drawHUD();
 
   } else if(screen==='fishing'){
-    // spawn creatures for fishing stage
+    // spawn creatures for fishing stage — always on-screen
     const fsi=Math.max(CFG.spawnMin, currentStage.spawnInterval - Math.floor(score/120)*4);
-    if(++spawnTimer>=fsi){spawnCreature();spawnTimer=0;}
+    if(++spawnTimer>=fsi){spawnFishingCreature();spawnTimer=0;}
     for(let i=creatures.length-1;i>=0;i--){
       const c=creatures[i];
       if(c.captured){c.captureT++;if(c.captureT>45)creatures.splice(i,1);continue;}
