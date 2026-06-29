@@ -1205,7 +1205,7 @@ const CREATURES = [
    STAGE DEFINITIONS
    Modify pool, speedMult, challenge.target to tune each stage.
    ═══════════════════════════════════════════════════════════════════════════ */
-const STAGES = [
+const ALL_STAGES = [
   {
     id:1, name:'Sunlight Zone', type:'cannon',
     bg:{ top:'#81D4FA', mid:'#0288D1', bot:'#01579B' },
@@ -1386,15 +1386,17 @@ let score=0, totalCatches=0;
 let stageIdx=0;
 let stageCatches=0;
 let stageSpecies=new Set();
+let gameMode=''; // 'cannon'|'fishing'
+let STAGES=[]; // populated by selectMode()
 
-// Screen: 'playing'|'stageClear'|'stageFail'|'pokédex'|'intro'|'leaderboard'|'fishing'
-let screen='intro';
+// Screen: 'menu'|'playing'|'stageClear'|'stageFail'|'pokédex'|'intro'|'leaderboard'|'fishing'
+let screen='menu';
 let introTimer=0;
-const INTRO_DURATION=200; // frames to show stage intro
+const INTRO_DURATION=200;
 
-// bg interpolation
-let bgFrom={...STAGES[0].bg};
-let bgTo  ={...STAGES[0].bg};
+// bg interpolation — starts as deep ocean blue for the menu
+let bgFrom={top:'#006994',mid:'#004080',bot:'#002050'};
+let bgTo  ={top:'#006994',mid:'#004080',bot:'#002050'};
 let bgT   =1;
 
 let spawnTimer=0;
@@ -1501,6 +1503,118 @@ function retryStage(){
     FISH.lineX=W/2;
     for(let i=0;i<5;i++) spawnFishingCreature();
   }
+}
+
+function selectMode(mode){
+  gameMode=mode;
+  STAGES=ALL_STAGES.filter(s=>s.type===(mode==='cannon'?'cannon':'fishing'));
+  stageIdx=0;
+  score=0; totalCatches=0; stageCatches=0; stageSpecies=new Set();
+  creatures.length=0; nets.length=0; particles.length=0; popups.length=0; powerups.length=0;
+  netsUsed=0; stageFailTimer=0;
+  if(_stageClearTimeout){clearTimeout(_stageClearTimeout);_stageClearTimeout=null;}
+  bgFrom={...STAGES[0].bg}; bgTo={...STAGES[0].bg}; bgT=1;
+  spawnTimer=0;
+  if(mode==='fishing'){
+    FISH.state='idle'; FISH.tipY=0; FISH.creature=null;
+    FISH.tension=0; FISH.biteTimer=0; FISH.biteCreature=null;
+    FISH.cooldown=0; FISH.castsDone=0; FISH.caughtThisStage=0;
+    FISH.breakAnim=0; FISH.successAnim=0;
+    FISH.lineX=W/2;
+    for(let i=0;i<5;i++) spawnFishingCreature();
+    screen='intro'; introTimer=0;
+  } else {
+    spawnCreature(); spawnCreature(); spawnCreature();
+    screen='intro'; introTimer=0;
+  }
+}
+
+let _menuBtns=null;
+function drawMenuScreen(){
+  // title
+  ctx.save();
+  ctx.fillStyle='rgba(0,10,30,.55)';ctx.fillRect(0,0,W,H);
+  const pulse=Math.sin(gameTime*.05)*.06+.94;
+  ctx.shadowColor='rgba(0,200,255,.8)';ctx.shadowBlur=28;
+  ctx.fillStyle='#7ee8ff';ctx.font=`bold ${Math.round(36*pulse)}px Comic Sans MS,cursive`;
+  ctx.textAlign='center';
+  ctx.fillText('🌊 OCEAN NET CATCH 🌊',W/2,H*0.13);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(180,230,255,.7)';ctx.font='15px Comic Sans MS,cursive';
+  ctx.fillText('Choose your game mode',W/2,H*0.13+36);
+  ctx.restore();
+
+  const cardW=Math.min(W*0.42,180), cardH=Math.min(H*0.38,220);
+  const gap=W*0.04;
+  const totalW=cardW*2+gap;
+  const cx=W/2-totalW/2;
+  const cy=H*0.26;
+
+  const cards=[
+    {
+      mode:'cannon',
+      icon:'🎯',
+      label:'NET CANNON',
+      desc:'Fire nets from a cannon\nto catch sea creatures!',
+      stages:ALL_STAGES.filter(s=>s.type==='cannon').length,
+      color:'#FF6B35', glow:'255,107,53',
+    },
+    {
+      mode:'fishing',
+      icon:'🎣',
+      label:'FISHING',
+      desc:'Cast a line, time your hook\nand reel them in!',
+      stages:ALL_STAGES.filter(s=>s.type==='fishing').length,
+      color:'#00BCD4', glow:'0,188,212',
+    },
+  ];
+
+  _menuBtns=[];
+  cards.forEach((card,i)=>{
+    const bx=cx+i*(cardW+gap), by=cy;
+    _menuBtns.push({x:bx,y:by,w:cardW,h:cardH,mode:card.mode});
+
+    const hover=Math.sin(gameTime*.07+i*1.8)*.03+.97;
+    ctx.save();
+    ctx.translate(bx+cardW/2,(by+cardH/2));ctx.scale(hover,hover);ctx.translate(-(bx+cardW/2),-(by+cardH/2));
+
+    // card bg
+    ctx.fillStyle=`rgba(0,20,50,.75)`;
+    ctx.beginPath();ctx.roundRect(bx,by,cardW,cardH,16);ctx.fill();
+    ctx.strokeStyle=card.color;ctx.lineWidth=2.5;
+    ctx.shadowColor=`rgba(${card.glow},.6)`;ctx.shadowBlur=16;
+    ctx.beginPath();ctx.roundRect(bx,by,cardW,cardH,16);ctx.stroke();
+    ctx.shadowBlur=0;
+
+    // icon
+    ctx.font=`${Math.round(cardH*.22)}px serif`;ctx.textAlign='center';
+    ctx.fillText(card.icon,bx+cardW/2,by+cardH*.28);
+
+    // label
+    ctx.fillStyle=card.color;ctx.font=`bold ${Math.round(cardW*.11)}px Comic Sans MS,cursive`;
+    ctx.shadowColor=`rgba(${card.glow},.5)`;ctx.shadowBlur=8;
+    ctx.fillText(card.label,bx+cardW/2,by+cardH*.5);
+    ctx.shadowBlur=0;
+
+    // description
+    ctx.fillStyle='rgba(200,230,255,.8)';ctx.font=`${Math.round(cardW*.075)}px Comic Sans MS,cursive`;
+    const lines=card.desc.split('\n');
+    lines.forEach((line,li)=>ctx.fillText(line,bx+cardW/2,by+cardH*.62+li*cardH*.12));
+
+    // stage count badge
+    ctx.fillStyle=`rgba(${card.glow},.2)`;
+    ctx.beginPath();ctx.roundRect(bx+cardW*.1,by+cardH*.83,cardW*.8,cardH*.12,8);ctx.fill();
+    ctx.fillStyle=card.color;ctx.font=`bold ${Math.round(cardW*.08)}px Comic Sans MS,cursive`;
+    ctx.fillText(`${card.stages} Stages`,bx+cardW/2,by+cardH*.91);
+
+    ctx.restore();
+  });
+
+  // tap hint
+  const ph=Math.sin(gameTime*.09)*.3+.7;
+  ctx.fillStyle=`rgba(150,210,255,${ph*.6})`;
+  ctx.font='13px Comic Sans MS,cursive';ctx.textAlign='center';
+  ctx.fillText('Tap a card to start',W/2,cy+cardH+34);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1907,7 +2021,7 @@ function drawHUD(){
   ctx.font='bold 22px Comic Sans MS,cursive';
   ctx.textAlign='center';
   ctx.shadowColor='rgba(0,180,255,.7)';ctx.shadowBlur=10;
-  ctx.fillText(`Stage ${stage.id}: ${stage.name}`,W/2,30);
+  ctx.fillText(`Stage ${stageIdx+1}/${STAGES.length}: ${stage.name}`,W/2,30);
   ctx.shadowBlur=0;
 
   // score (right)
@@ -2020,7 +2134,7 @@ function drawIntroScreen(){
   ctx.fillStyle='#FFD700';
   ctx.font='bold 20px Comic Sans MS,cursive';
   ctx.textAlign='center';
-  ctx.fillText(`— STAGE ${stage.id} —`,W/2,H/2-70);
+  ctx.fillText(`— STAGE ${stageIdx+1} of ${STAGES.length} —`,W/2,H/2-70);
   ctx.shadowColor='rgba(126,232,255,.9)'; ctx.shadowBlur=20;
   ctx.fillStyle='#7ee8ff';
   ctx.font='bold 48px Comic Sans MS,cursive';
@@ -2060,7 +2174,7 @@ function drawStageClearScreen(){
   ctx.shadowBlur=0;
   ctx.fillStyle='#7ee8ff';
   ctx.font='28px Comic Sans MS,cursive';
-  ctx.fillText(`Stage ${STAGES[stageIdx].id}: ${STAGES[stageIdx].name} complete!`,W/2,H/2-30);
+  ctx.fillText(`Stage ${stageIdx+1}: ${STAGES[stageIdx].name} complete!`,W/2,H/2-30);
   ctx.fillStyle='#FFF';
   ctx.font='22px Comic Sans MS,cursive';
   ctx.fillText(`Creatures caught: ${stageCatches}   Score: ${score}`,W/2,H/2+16);
@@ -2081,7 +2195,7 @@ function drawStageClearScreen(){
     ctx.beginPath();ctx.roundRect(btnX,btnY,btnW,btnH,28);ctx.stroke();
     ctx.fillStyle='#FFF';
     ctx.font='bold 24px Comic Sans MS,cursive';
-    const label=stageIdx<STAGES.length-1?'Next Stage →':'Play Again!';
+    const label=stageIdx<STAGES.length-1?'Next Stage →':'🏠 Main Menu';
     ctx.fillText(label,W/2,btnY+37);
     // store hit area
     ctx._stageClearBtn={x:btnX,y:btnY,w:btnW,h:btnH};
@@ -2268,7 +2382,7 @@ function drawStageFailScreen(){
   ctx.fillStyle='#ffcdd2';
   ctx.font='24px Comic Sans MS,cursive';
   const failReason=stage.type==='fishing'?'Ran out of casts':'Ran out of nets';
-  ctx.fillText(`${failReason} on Stage ${stage.id}: ${stage.name}`,W/2,H/2-40);
+  ctx.fillText(`${failReason} on Stage ${stageIdx+1}: ${stage.name}`,W/2,H/2-40);
   ctx.fillStyle='#FFF';
   ctx.font='20px Comic Sans MS,cursive';
   ctx.fillText(`Creatures caught: ${stageCatches}   Score so far: ${score}`,W/2,H/2+4);
@@ -2440,7 +2554,7 @@ function drawFishingHUD(){
   ctx.font='bold 22px Comic Sans MS,cursive';
   ctx.textAlign='center';
   ctx.shadowColor='rgba(0,180,255,.7)';ctx.shadowBlur=10;
-  ctx.fillText(`Stage ${stage.id}: ${stage.name}`,W/2,30);
+  ctx.fillText(`Stage ${stageIdx+1}/${STAGES.length}: ${stage.name}`,W/2,30);
   ctx.shadowBlur=0;
   // score
   ctx.fillStyle='#FFD700';ctx.font='bold 28px Comic Sans MS,cursive';
@@ -2659,7 +2773,9 @@ function loop(){
   const currentStage=STAGES[stageIdx];
   const isFishing=currentStage&&currentStage.type==='fishing';
 
-  if(screen==='intro'){
+  if(screen==='menu'){
+    drawMenuScreen();
+  } else if(screen==='intro'){
     introTimer++;
     if(!isFishing) drawCannon();
     drawIntroScreen();
@@ -2795,6 +2911,16 @@ canvas.addEventListener('mousemove',e=>{
 });
 
 function handleTap(cx,cy){
+  if(screen==='menu'){
+    if(_menuBtns){
+      for(const btn of _menuBtns){
+        if(cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
+          selectMode(btn.mode); return;
+        }
+      }
+    }
+    return;
+  }
   if(screen==='pokédex'){
     if(dexCloseArea&&cx>=dexCloseArea.x&&cy>=dexCloseArea.y&&cx<=dexCloseArea.x+dexCloseArea.w&&cy<=dexCloseArea.y+dexCloseArea.h){
       screen=STAGES[stageIdx].type==='fishing'?'fishing':'playing'; return;
@@ -2806,7 +2932,7 @@ function handleTap(cx,cy){
   }
   if(screen==='leaderboard'){
     if(_lbBackBtn&&cx>=_lbBackBtn.x&&cy>=_lbBackBtn.y&&cx<=_lbBackBtn.x+_lbBackBtn.w&&cy<=_lbBackBtn.y+_lbBackBtn.h){
-      score=0;totalCatches=0;gotoStage(0);
+      screen='menu';
     }
     return;
   }
@@ -2815,7 +2941,7 @@ function handleTap(cx,cy){
     if(btn&&stageClearTimer>60&&cx>=btn.x&&cy>=btn.y&&cx<=btn.x+btn.w&&cy<=btn.y+btn.h){
       stageClearTimer=0;
       if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
-      else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
+      else { saveHighScore(); screen='menu'; }
     }
     return;
   }
@@ -2825,7 +2951,7 @@ function handleTap(cx,cy){
         retryStage(); return;
       }
       if(cx>=_stageFailBtn.quit.x&&cy>=_stageFailBtn.quit.y&&cx<=_stageFailBtn.quit.x+_stageFailBtn.quit.w&&cy<=_stageFailBtn.quit.y+_stageFailBtn.quit.h){
-        score=0;totalCatches=0;gotoStage(0); return;
+        screen='menu'; return;
       }
     }
     return;
@@ -2897,11 +3023,11 @@ window.addEventListener('keydown',e=>{
     if((e.code==='Space'||e.code==='Enter')&&btn&&stageClearTimer>60){
       stageClearTimer=0;
       if(stageIdx<STAGES.length-1) gotoStage(stageIdx+1);
-      else { saveHighScore(); score=0; totalCatches=0; gotoStage(0); }
+      else { saveHighScore(); screen='menu'; }
     }
   }
   if(screen==='stageFail'&&e.code==='Space') retryStage();
-  if(screen==='leaderboard'&&e.code==='Space'){score=0;totalCatches=0;gotoStage(0);}
+  if(screen==='leaderboard'&&e.code==='Space'){screen='menu';}
 });
 
 document.getElementById('dex-btn').addEventListener('click',()=>{
@@ -2955,7 +3081,6 @@ FISH.lineX=W/2;
 function unlockUI(){
   document.getElementById('lb-btn').style.display='flex';
 }
-spawnCreature(); spawnCreature(); spawnCreature();
 loop();
 </script>
 </body>
